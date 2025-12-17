@@ -77,6 +77,22 @@ button.loading{
     text-align:center;
     font-weight:700;
 }
+
+/* Loader spinner */
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #2563eb;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  margin: 40px auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>
 </head>
 
@@ -99,16 +115,13 @@ button.loading{
 <label>Signature</label>
 <canvas id="signature"></canvas>
 
-<button onclick="goStep2()">Next</button>
+<button id="step1Btn" onclick="goStep2()">Next</button>
 </div>
 
-<!-- STEP 2 -->
+<!-- STEP 2 (LOADING) -->
 <div class="step" id="s2">
-<h3>Loan Status</h3>
-<p><b>Name:</b> <span id="n"></span></p>
-<p><b>Amount:</b> Rs. <span id="a"></span></p>
-
-<button id="step2Btn" onclick="autoToStep3()">Processing...</button>
+<h3>Processing Loan...</h3>
+<div class="loader"></div>
 </div>
 
 <!-- STEP 3 -->
@@ -152,24 +165,23 @@ function goStep2(){
     const name=document.getElementById("customerName").value.trim();
     const amount=document.getElementById("loanAmount").value.trim();
     if(!name||!amount){alert("Name සහ Amount පුරවන්න");return;}
-    n.innerText=name;
-    a.innerText=amount;
-    show(2);
-}
 
-function autoToStep3(){
-    const btn=document.getElementById("step2Btn");
-    btn.classList.add("loading");
-    btn.innerText="Processing...";
-    setTimeout(goStep3,3000);
+    // save data for later
+    window.customerData = {name:name, amount:parseInt(amount)};
+
+    show(2); // show loading animation
+
+    // auto go to step 3 after 3 seconds
+    setTimeout(goStep3, 3000);
 }
 
 function goStep3(){
-    const amt=parseInt(document.getElementById("loanAmount").value);
-    const fee=amt<=100000?3000:amt<=300000?4500:5500;
-    fa.innerText=amt;
-    ins.innerText=fee;
-    autoFee.innerText=fee;
+    const amt = window.customerData.amount;
+    const fee = amt <= 100000 ? 3000 : amt <= 300000 ? 4500 : 5500;
+
+    fa.innerText = amt;
+    ins.innerText = fee;
+    autoFee.innerText = fee;
     show(3);
 }
 
