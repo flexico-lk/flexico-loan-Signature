@@ -49,6 +49,7 @@ button{
     margin-top:16px;
     font-size:16px;
     font-weight:600;
+    cursor:pointer;
 }
 .step{display:none}
 .step.active{display:block}
@@ -110,10 +111,10 @@ button{
 <h3>Customer Details</h3>
 
 <label>Customer Name</label>
-<input id="name">
+<input id="customerName">
 
 <label>Loan Amount</label>
-<input id="amount" type="number">
+<input id="loanAmount" type="number">
 
 <label>NIC Number</label>
 <input id="nic">
@@ -187,26 +188,31 @@ function show(i){
 }
 
 function goStep2(){
-    if(!name.value || !amount.value){
+    const name = document.getElementById("customerName").value.trim();
+    const amount = document.getElementById("loanAmount").value.trim();
+
+    if(name === "" || amount === ""){
         alert("⚠ කරුණාකර Name සහ Loan Amount පුරවන්න");
         return;
     }
-    n.innerText=name.value;
-    a.innerText=amount.value;
+
+    document.getElementById("n").innerText = name;
+    document.getElementById("a").innerText = amount;
     show(2);
 }
 
 function goStep3(){
-    let amt=parseInt(amount.value);
-    let fee=amt<=100000?3000:amt<=300000?4500:5500;
-    fa.innerText=amt;
-    ins.innerText=fee;
+    const amt = parseInt(document.getElementById("loanAmount").value);
+    const fee = amt <= 100000 ? 3000 : amt <= 300000 ? 4500 : 5500;
+
+    document.getElementById("fa").innerText = amt;
+    document.getElementById("ins").innerText = fee;
     show(3);
 }
 
 function confirmPayment(){
-    const receipt=document.getElementById("receipt");
-    if(receipt.files.length===0){
+    const receipt = document.getElementById("receipt");
+    if(receipt.files.length === 0){
         alert("⚠ Insurance payment receipt upload කරන්න");
         return;
     }
@@ -215,10 +221,10 @@ function confirmPayment(){
 }
 
 /* Signature */
-const canvas=document.getElementById("signature");
-const ctx=canvas.getContext("2d");
-canvas.width=canvas.offsetWidth;
-canvas.height=canvas.offsetHeight;
+const canvas = document.getElementById("signature");
+const ctx = canvas.getContext("2d");
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
 
 let draw=false;
 canvas.addEventListener("pointerdown",e=>{
