@@ -179,7 +179,7 @@ button{
 <button onclick="goStep2()">Next</button>
 </div>
 
-<!-- STEP 2 -->
+<!-- STEP 2 – Pending with 4 second countdown -->
 <div class="step" id="s2">
 <h3>Processing</h3>
 
@@ -191,12 +191,12 @@ button{
 
 <div class="loader"></div>
 
-<p style="text-align:center;font-size:13px;color:#64748b">
-Please wait...
+<p id="timerText" style="text-align:center;font-size:13px;color:#64748b">
+4 seconds remaining...
 </p>
 </div>
 
-<!-- STEP 3 -->
+<!-- STEP 3 – Insurance success -->
 <div class="step" id="s3">
 <div class="card" style="text-align:center">
 
@@ -244,8 +244,22 @@ function goStep2(){
     alert("Name සහ Amount පුරවන්න");
     return;
   }
-  show(2);                 // Pending
-  setTimeout(goStep3,4000) // 4 seconds → Insurance Success
+
+  show(2); // Step 2 visible
+
+  let countdown = 4; // 4 seconds
+  const timerText = document.getElementById("timerText");
+  timerText.innerText = countdown + " seconds remaining...";
+
+  const interval = setInterval(()=>{
+    countdown--;
+    if(countdown > 0){
+      timerText.innerText = countdown + " seconds remaining...";
+    } else {
+      clearInterval(interval);
+      goStep3(); // move to Insurance success
+    }
+  },1000);
 }
 
 /* SIGNATURE */
