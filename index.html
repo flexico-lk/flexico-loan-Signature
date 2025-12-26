@@ -3,106 +3,164 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flexico Loan</title>
+<title>Flexico Loan App</title>
 
 <style>
 *{box-sizing:border-box}
 body{
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto;
-    background:#eef2f7;
     margin:0;
-    padding:12px;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto;
+    background:linear-gradient(180deg,#2563eb,#1e40af);
 }
-.box{
+
+/* APP WRAPPER */
+.app{
     max-width:420px;
     margin:auto;
-    background:#fff;
-    padding:16px;
-    border-radius:16px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    min-height:100vh;
+    background:#f8fafc;
+    border-radius:22px 22px 0 0;
+    overflow:hidden;
 }
-h3{text-align:center;margin-bottom:14px}
 
-label{font-size:13px;font-weight:600;margin-top:10px;display:block}
+/* HEADER */
+.header{
+    background:linear-gradient(135deg,#2563eb,#1e40af);
+    color:#fff;
+    padding:18px;
+    text-align:center;
+    font-size:18px;
+    font-weight:700;
+}
 
-input,button{
+/* CONTENT */
+.box{padding:18px}
+
+h3{
+    text-align:center;
+    margin:10px 0 14px;
+    font-size:17px;
+}
+
+/* STEP DOTS */
+.steps{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin-bottom:16px;
+}
+.steps span{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#cbd5e1;
+}
+.steps span.active{background:#2563eb}
+
+label{
+    font-size:12.5px;
+    font-weight:600;
+    margin-top:12px;
+    display:block;
+}
+
+input{
     width:100%;
-    padding:12px;
+    padding:13px;
     margin-top:6px;
-    border-radius:12px;
+    border-radius:14px;
     border:1px solid #cbd5e1;
     font-size:15px;
 }
 
 button{
+    width:100%;
+    padding:14px;
+    border-radius:16px;
+    border:none;
     background:#2563eb;
     color:#fff;
-    border:none;
-    margin-top:16px;
     font-size:16px;
-    font-weight:600;
-    cursor:pointer;
+    font-weight:700;
+    margin-top:18px;
+    box-shadow:0 8px 18px rgba(37,99,235,.35);
 }
 
-button.loading{
-    pointer-events:none;
-    background:#94a3b8;
+/* CARD */
+.card{
+    background:#fff;
+    padding:14px;
+    border-radius:16px;
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+    margin-top:12px;
 }
 
+/* STEPS */
 .step{display:none}
 .step.active{display:block}
 
+/* SIGNATURE */
+.signature-text{
+    font-size:13px;
+    background:#eef2ff;
+    padding:10px;
+    border-radius:12px;
+    margin-bottom:8px;
+    line-height:1.6;
+}
 #signature{
     width:100%;
     height:160px;
     border:2px dashed #2563eb;
-    border-radius:12px;
+    border-radius:14px;
     background:#f8fafc;
-    touch-action:none;
 }
 
-.declaration{
-    margin-top:14px;
-    font-size:13.5px;
-    line-height:1.6;
-    background:#f1f5f9;
-    padding:12px;
-    border-radius:12px;
+/* LOADER */
+.loader{
+    border:6px solid #e5e7eb;
+    border-top:6px solid #2563eb;
+    border-radius:50%;
+    width:50px;
+    height:50px;
+    margin:24px auto;
+    animation:spin 1s linear infinite;
+}
+@keyframes spin{
+    from{transform:rotate(0)}
+    to{transform:rotate(360deg)}
 }
 
+/* SUCCESS */
 .success{
     background:#dcfce7;
-    padding:18px;
-    border-radius:14px;
+    padding:22px;
+    border-radius:18px;
     text-align:center;
     font-weight:700;
-}
-
-/* Loader spinner */
-.loader {
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #2563eb;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  margin: 40px auto;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    font-size:16px;
 }
 </style>
 </head>
 
 <body>
+
+<div class="app">
+<div class="header">Flexico Loan App</div>
 <div class="box">
+
+<div class="steps">
+  <span class="active"></span>
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
 
 <!-- STEP 1 -->
 <div class="step active" id="s1">
 <h3>Customer Details</h3>
 
+<div class="card">
 <label>Customer Name</label>
 <input id="customerName">
 
@@ -113,41 +171,49 @@ button.loading{
 <input>
 
 <label>Signature</label>
-<canvas id="signature"></canvas>
-
-<button id="step1Btn" onclick="goStep2()">Next</button>
+<div class="signature-text">
+(මා විසින් මෙම ණය මුදල ලබා ගන්නා අතර  
+අදාළ කාල වකවානුව ඇතුළත ගෙවන බව පොරොන්දු වෙමි)
 </div>
 
-<!-- STEP 2 (LOADING) -->
+<canvas id="signature"></canvas>
+</div>
+
+<button onclick="goStep2()">Next</button>
+</div>
+
+<!-- STEP 2 -->
 <div class="step" id="s2">
-<h3>Processing Loan...</h3>
+<h3>Insurance Payment</h3>
+
+<div class="card" style="text-align:center;font-size:14px;line-height:1.7">
+මෙම ණය මුදල ලබා ගැනීම සඳහා  
+<b>මෙම රක්ෂණ මුදල ගෙවීම අනිවාර්යයි.</b><br><br>
+කරුණාකර මෙම මුදල ගෙවා  
+Receipt පත මෙයට Upload කරන්න.<br><br>
+පැයක් වගේ කාලයක් ඇතුළත  
+ඔබට මුදල් ලබාගන්න පුළුවන්.
+</div>
+
 <div class="loader"></div>
 </div>
 
 <!-- STEP 3 -->
 <div class="step" id="s3">
-<h3>Insurance Payment</h3>
+<h3>Upload Receipt</h3>
 
+<div class="card">
 <p><b>Loan Amount:</b> Rs. <span id="fa"></span></p>
 <p><b>Insurance Fee:</b> Rs. <span id="ins"></span></p>
 
-<div class="declaration">
-ඔබ මෙම ණය මුදල ලබා ගැනීම සඳහා
-<b>Rs. <span id="autoFee"></span></b>
-ක රක්ෂණ මුදලක් ගෙවිය යුතුය.
-<br><br>
-කරුණාකර මෙම රක්ෂණ ගෙවීම සිදු කර,
-ඒ සඳහා ලැබුණු Receipt එක මෙතන Upload කරන්න.
-පැයක් වගේ  කාලයක් ඇතුළත ඔබට මුදල් ලබාගන්න පුළුවන්
-</div>
-
-<label>Upload Insurance Payment Receipt</label>
+<label>Upload Insurance Receipt</label>
 <input type="file" id="receipt" accept="image/*">
-
-<button onclick="confirmPayment()">Next</button>
 </div>
 
-<!-- STEP 4 (FINAL) -->
+<button onclick="confirmPayment()">Submit</button>
+</div>
+
+<!-- STEP 4 -->
 <div class="step" id="s4">
 <div class="success">
 ✔ Insurance Payment Submitted Successfully
@@ -155,53 +221,55 @@ button.loading{
 </div>
 
 </div>
+</div>
 
 <script>
+const dots=document.querySelectorAll(".steps span");
+
 function show(i){
-    document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
-    document.getElementById("s"+i).classList.add("active");
+  document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
+  dots.forEach(d=>d.classList.remove("active"));
+  document.getElementById("s"+i).classList.add("active");
+  dots[i-1].classList.add("active");
 }
 
 function goStep2(){
-    const name=document.getElementById("customerName").value.trim();
-    const amount=document.getElementById("loanAmount").value.trim();
-    if(!name||!amount){alert("Name සහ Amount පුරවන්න");return;}
-
-    // save data for later
-    window.customerData = {name:name, amount:parseInt(amount)};
-
-    show(2); // show loading animation
-
-    // auto go to step 3 after 3 seconds
-    setTimeout(goStep3, 3000);
+  if(!customerName.value || !loanAmount.value){
+    alert("Name සහ Amount පුරවන්න");
+    return;
+  }
+  window.amount=parseInt(loanAmount.value);
+  show(2);
+  setTimeout(goStep3,3000);
 }
 
 function goStep3(){
-    const amt = window.customerData.amount;
-    const fee = amt <= 100000 ? 3000 : amt <= 300000 ? 4500 : 5500;
-
-    fa.innerText = amt;
-    ins.innerText = fee;
-    autoFee.innerText = fee;
-    show(3);
+  const fee=amount<=100000?3000:amount<=300000?4500:5500;
+  fa.innerText=amount;
+  ins.innerText=fee;
+  show(3);
 }
 
 function confirmPayment(){
-    if(!receipt.files.length){alert("Receipt upload කරන්න");return;}
-    show(4);
+  if(!receipt.files.length){
+    alert("Receipt upload කරන්න");
+    return;
+  }
+  show(4);
 }
 
-/* Signature */
+/* SIGNATURE */
 const canvas=document.getElementById("signature");
 const ctx=canvas.getContext("2d");
 canvas.width=canvas.offsetWidth;
 canvas.height=canvas.offsetHeight;
 let draw=false;
 canvas.addEventListener("pointerdown",e=>{
-    draw=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY);
+  draw=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY);
 });
 canvas.addEventListener("pointermove",e=>{
-    if(!draw)return;ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();
+  if(!draw)return;
+  ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();
 });
 canvas.addEventListener("pointerup",()=>draw=false);
 </script>
