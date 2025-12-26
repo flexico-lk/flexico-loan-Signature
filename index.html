@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flexico Loan App</title>
-
 <style>
 *{box-sizing:border-box}
 body{
@@ -142,7 +141,6 @@ button{
 }
 </style>
 </head>
-
 <body>
 
 <div class="app">
@@ -151,7 +149,6 @@ button{
 
 <div class="steps">
   <span class="active"></span>
-  <span></span>
   <span></span>
   <span></span>
 </div>
@@ -184,39 +181,48 @@ button{
 
 <!-- STEP 2 -->
 <div class="step" id="s2">
-<h3>Insurance Payment</h3>
+<h3>Processing</h3>
 
 <div class="card" style="text-align:center;font-size:14px;line-height:1.7">
-මෙම ණය මුදල ලබා ගැනීම සඳහා  
-<b>මෙම රක්ෂණ මුදල ගෙවීම අනිවාර්යයි.</b><br><br>
-කරුණාකර මෙම මුදල ගෙවා  
-Receipt පත මෙයට Upload කරන්න.<br><br>
-පැයක් වගේ කාලයක් ඇතුළත  
-ඔබට මුදල් ලබාගන්න පුළුවන්.
+ඔබගේ අයදුම්පත  
+<b>Processing</b> වෙමින් පවතී.<br><br>
+කරුණාකර මඳ වේලාවක් රැඳී සිටින්න.
 </div>
 
 <div class="loader"></div>
+
+<p style="text-align:center;font-size:13px;color:#64748b">
+Please wait...
+</p>
 </div>
 
 <!-- STEP 3 -->
 <div class="step" id="s3">
-<h3>Upload Receipt</h3>
+<div class="card" style="text-align:center">
 
-<div class="card">
-<p><b>Loan Amount:</b> Rs. <span id="fa"></span></p>
-<p><b>Insurance Fee:</b> Rs. <span id="ins"></span></p>
+<h3 style="color:#16a34a">Insurance Successful</h3>
 
-<label>Upload Insurance Receipt</label>
-<input type="file" id="receipt" accept="image/*">
+<p style="font-size:14px;line-height:1.8;margin-top:10px">
+මෙම ණය මුදල ලබා ගැනීම සඳහා  
+<b>රක්ෂණ ක්‍රියාවලිය සාර්ථකව සම්පූර්ණ වී ඇත.</b><br><br>
+
+දැනට ඔබගේ ණය අයදුම්පත  
+<b>Approved & Processing</b> වෙමින් පවතී.<br><br>
+
+පැයක් වගේ කාලයක් ඇතුළත  
+මුදල් ඔබගේ ගිණුමට බැර කරනු ලැබේ.
+</p>
+
+<div style="
+background:#ecfeff;
+padding:12px;
+border-radius:14px;
+margin-top:14px;
+font-size:13px;
+">
+✔ Insurance Message Successfully Verified
 </div>
 
-<button onclick="confirmPayment()">Submit</button>
-</div>
-
-<!-- STEP 4 -->
-<div class="step" id="s4">
-<div class="success">
-✔ Insurance Payment Submitted Successfully
 </div>
 </div>
 
@@ -238,24 +244,8 @@ function goStep2(){
     alert("Name සහ Amount පුරවන්න");
     return;
   }
-  window.amount=parseInt(loanAmount.value);
-  show(2);
-  setTimeout(goStep3,3000);
-}
-
-function goStep3(){
-  const fee=amount<=100000?3000:amount<=300000?4500:5500;
-  fa.innerText=amount;
-  ins.innerText=fee;
-  show(3);
-}
-
-function confirmPayment(){
-  if(!receipt.files.length){
-    alert("Receipt upload කරන්න");
-    return;
-  }
-  show(4);
+  show(2);                 // Pending
+  setTimeout(goStep3,4000) // 4 seconds → Insurance Success
 }
 
 /* SIGNATURE */
