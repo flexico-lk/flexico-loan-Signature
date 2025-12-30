@@ -55,6 +55,7 @@ canvas {
     border: 2px dashed #aaa;
     border-radius: 12px;
     margin-top: 8px;
+    touch-action: none; /* Mobile drawing fix */
 }
 
 button {
@@ -86,7 +87,7 @@ button {
 </head>
 <body>
 <div class="app">
-    <h3>Customer Details & Loan Confirmation</h3>
+    <h3>Ez Credit Application</h3>
 
     <label>Name</label>
     <input id="name">
@@ -130,8 +131,17 @@ button {
 /* Signature */
 const c = document.getElementById("sign");
 const ctx = c.getContext("2d");
-c.width = c.offsetWidth;
-c.height = c.offsetHeight;
+
+// Set canvas size
+function resizeCanvas() {
+    const data = ctx.getImageData(0, 0, c.width, c.height);
+    c.width = c.offsetWidth;
+    c.height = 120;
+    ctx.putImageData(data, 0, 0);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
 let draw = false;
 
 c.addEventListener("pointerdown", e => {
@@ -140,7 +150,7 @@ c.addEventListener("pointerdown", e => {
     ctx.moveTo(e.offsetX, e.offsetY);
 });
 c.addEventListener("pointermove", e => {
-    if (!draw) return;
+    if(!draw) return;
     ctx.lineTo(e.offsetX, e.offsetY);
     ctx.stroke();
 });
@@ -162,7 +172,7 @@ function showDetails() {
         return;
     }
 
-    // Check signature
+    // Signature check
     const sigData = ctx.getImageData(0,0,c.width,c.height).data;
     if(sigData.every(v=>v===0)) {
         alert("කරුණාකර signature එක ලබා දෙන්න");
@@ -175,14 +185,17 @@ function showDetails() {
     document.getElementById("insurance").innerText = calcInsurance(amount);
 
     document.getElementById("confirmation").style.display = "block";
+
+    // Scroll to confirmation section
+    document.getElementById("confirmation").scrollIntoView({behavior:"smooth"});
 }
 
 /* Insurance calc */
 function calcInsurance(a) {
     a = parseInt(a);
-    if (a <= 60000) return "2,500";
-    if (a <= 100000) return "3,500";
-    if (a <= 200000) return "4,000";
+    if(a <= 60000) return "2,500";
+    if(a <= 100000) return "3,500";
+    if(a <= 200000) return "4,000";
     return "5,000";
 }
 
