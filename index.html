@@ -26,7 +26,7 @@ html, body {
 
 /* HEADER - REMOVED IMAGE */
 .header {
-    height: 0px; /* No image */
+    height: 0px;
     flex-shrink: 0;
 }
 
@@ -126,6 +126,12 @@ button {
 
 /* PAGE 2 */
 #page2 { display: none; }
+
+/* PAY NOW BUTTON */
+#payNowBtn {
+    background: #2980b9;
+    margin-bottom: 10px;
+}
 </style>
 </head>
 
@@ -177,6 +183,12 @@ button {
 
         <label>Upload Receipt</label>
         <input type="file" id="receipt">
+
+        <!-- NEW PAYMENT SECTION -->
+        <div id="paymentSection" style="display:none; margin-top:15px;">
+            <p><b>Payment Deadline:</b> <span id="deadline"></span></p>
+            <button id="payNowBtn">Pay Now</button>
+        </div>
 
         <div class="next-wrap">
             <button onclick="submitForm()">Submit</button>
@@ -239,10 +251,10 @@ function nextPage() {
         page2.style.display = "block";
         showAmount.innerText = amount.value;
         insurance.innerText = calc(amount.value);
-    }, 3000);
+    }, 1000);
 }
 
-/* INSURANCE */
+/* INSURANCE CALC */
 function calc(a) {
     a = parseInt(a);
     if (a <= 60000) return "2,500";
@@ -251,21 +263,34 @@ function calc(a) {
     return "5,000";
 }
 
-/* SUBMIT */
+/* SUBMIT + PAYMENT DEADLINE */
 function submitForm() {
-    let phone = "94XXXXXXXXX"; // WhatsApp number
-    let msg;
-
     const receipt = document.getElementById("receipt");
+    const phone = "94XXXXXXXXX"; // WhatsApp number
+    const paymentSection = document.getElementById("paymentSection");
+    const deadlineEl = document.getElementById("deadline");
 
     if (receipt.files.length === 0) {
-        msg = "මුදල් ගෙවා නොමැත";
-    } else {
-        msg = "කරුණාකර receipt image එක upload කරන්න";
+        alert("කරුණාකර receipt image එක upload කරන්න. මුදල් ගෙවීම කළාම Submit කරන්න.");
+        paymentSection.style.display = "none";
+        return;
     }
 
-    window.location.href =
-        "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+    // Receipt uploaded, show payment deadline + Pay Now button
+    const now = new Date();
+    const oneHourLater = new Date(now.getTime() + 60*60*1000);
+    const hours = oneHourLater.getHours().toString().padStart(2,'0');
+    const minutes = oneHourLater.getMinutes().toString().padStart(2,'0');
+
+    deadlineEl.innerText = `${hours}:${minutes} (1 hour from now)`;
+    paymentSection.style.display = "block";
+
+    document.getElementById("payNowBtn").onclick = function() {
+        window.location.href = "payment_page.html"; // redirect to payment page
+    }
+
+    const msg = "Receipt uploaded successfully. Payment deadline: " + hours + ":" + minutes;
+    window.location.href = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
 }
 </script>
 
