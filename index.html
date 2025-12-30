@@ -6,104 +6,122 @@
 <title>Ez Credit App</title>
 
 <style>
-body{
-    margin:0;
-    font-family:system-ui,Arial;
-    background:#eaeef3;
+/* STOP BODY SCROLL */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: system-ui, Arial;
+    background: #eaeef3;
 }
 
-/* APP CARD */
+/* APP WRAPPER */
 .app {
-    max-width:420px;
-    margin:0 auto;
-    min-height:100vh;
-    background:#fff;
+    max-width: 420px;
+    height: 100vh;
+    margin: auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
 }
 
 /* HEADER IMAGE */
 .header {
-    height:160px;
-    background:url("https://via.placeholder.com/600x300.png?text=Transparent+BG+Image") center/cover no-repeat;
+    height: 160px;
+    background: url("https://via.placeholder.com/600x300.png?text=Transparent+Background") center/cover no-repeat;
+    flex-shrink: 0;
 }
 
-/* CONTENT */
+/* CONTENT AREA */
 .content {
-    padding:20px;
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
 }
 
+/* TEXT */
 h3 {
-    text-align:center;
-    margin:10px 0;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 label {
-    font-weight:600;
-    margin-top:14px;
-    display:block;
+    display: block;
+    font-weight: 600;
+    margin-top: 14px;
 }
 
+/* INPUTS */
 input {
-    width:100%;
-    padding:12px;
-    margin-top:6px;
-    border-radius:12px;
-    border:1px solid #ccc;
-    font-size:15px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    margin-top: 6px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 15px;
 }
 
+/* DESCRIPTION */
 .statement {
-    margin-top:15px;
-    padding:12px;
-    background:#f4f6f8;
-    border-radius:12px;
-    font-size:14px;
+    margin-top: 15px;
+    padding: 12px;
+    background: #f4f6f8;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 /* SIGNATURE */
 canvas {
-    width:100%;
-    height:120px;
-    border:2px dashed #aaa;
-    border-radius:12px;
-    margin-top:8px;
-    touch-action:none;
+    width: 100%;
+    height: 120px;
+    border: 2px dashed #aaa;
+    border-radius: 12px;
+    margin-top: 8px;
+    touch-action: none;
 }
 
+.clear-btn {
+    background: #e74c3c;
+    margin-top: 8px;
+}
+
+/* BUTTONS */
 button {
-    width:100%;
-    padding:14px;
-    margin-top:20px;
-    border:none;
-    border-radius:14px;
-    font-size:16px;
-    background:#27ae60;
-    color:#fff;
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    background: #27ae60;
+    color: #fff;
 }
 
-/* SPINNER */
+/* LOADING */
 #loading {
-    position:fixed;
-    inset:0;
-    background:rgba(255,255,255,0.95);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:999;
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
 }
 .spinner {
-    width:30px;
-    height:30px;
-    border:4px solid #ccc;
-    border-top:4px solid #27ae60;
-    border-radius:50%;
-    animation:spin 1s linear infinite;
+    width: 28px;
+    height: 28px;
+    border: 4px solid #ccc;
+    border-top: 4px solid #27ae60;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
-@keyframes spin {
-    100% { transform:rotate(360deg); }
-}
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* PAGE 2 */
-#page2 { display:none; }
+/* PAGE 2 HIDE */
+#page2 { display: none; }
 </style>
 </head>
 
@@ -113,7 +131,7 @@ button {
 
     <div class="header"></div>
 
-    <!-- PAGE 1 -->
+    <!-- PAGE 01 -->
     <div class="content" id="page1">
         <h3>Customer Details</h3>
 
@@ -127,25 +145,28 @@ button {
         <input type="number" id="amount">
 
         <div class="statement">
-            මා විසින් ලබාගන්නා මුදලට එකඟව ගෙවීම් සිදු කරන බවට මෙයින් පොරොන්දු වෙමි.
+            මා විසින් ලබාගන්නා මෙම මුදල, ඉහත ලේඛනයේ සඳහන් පොලී අනුපාතයන්ට එකඟව මුදල් ගෙවන බවට මෙයින් පොරොන්දු වෙමි.
         </div>
 
         <label>Signature</label>
         <canvas id="sign"></canvas>
+        <button class="clear-btn" onclick="clearSign()">Clear Signature</button>
 
         <button onclick="nextPage()">Next</button>
     </div>
 
-    <!-- PAGE 2 -->
+    <!-- PAGE 02 -->
     <div class="content" id="page2">
         <h3>Loan Approved</h3>
 
-        <p><b>Amount:</b> Rs. <span id="showAmount"></span></p>
+        <p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
         <p><b>Insurance:</b> Rs. <span id="insurance"></span></p>
 
         <div class="statement">
-            ඔබගේ ණය මුදල අනුමත වී ඇත.
-            රක්ෂණ මුදල ගෙවීම අනිවාර්ය වේ.
+            ඔබ ලබාගන්නා ණය මුදල අනුමත වී ඇත.<br><br>
+            එම මුදල ලබා ගැනීම සඳහා, ඉහත සඳහන් රක්ෂණ මුදල ගෙවීම අනිවාර්ය වේ.<br><br>
+            රක්ෂණ මුදල ගෙවා පැයක් ඇතුළත, අපගේ පද්ධතිය මඟින් ඔබගේ ගිණුමට මුදල් බැර කරනු ලැබේ.<br><br>
+            අප විසින් ලබාදෙන රිසිට් පත WhatsApp හරහා එවනු ලැබේ.
         </div>
 
         <label>Upload Receipt</label>
@@ -161,59 +182,70 @@ button {
 </div>
 
 <script>
-/* SIGN PAD */
+/* SIGNATURE PAD */
 const c = sign;
 const ctx = c.getContext("2d");
 c.width = c.offsetWidth;
 c.height = c.offsetHeight;
-let draw=false;
+let draw = false;
 
-c.addEventListener("pointerdown",e=>{
-    draw=true; ctx.beginPath(); ctx.moveTo(e.offsetX,e.offsetY);
+c.addEventListener("pointerdown", e => {
+    draw = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
 });
-c.addEventListener("pointermove",e=>{
-    if(!draw) return;
-    ctx.lineTo(e.offsetX,e.offsetY); ctx.stroke();
+c.addEventListener("pointermove", e => {
+    if (!draw) return;
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
 });
-c.addEventListener("pointerup",()=>draw=false);
+c.addEventListener("pointerup", () => draw = false);
+c.addEventListener("pointerleave", () => draw = false);
 
-/* NEXT */
-function nextPage(){
-    if(name.value==""||nic.value==""||amount.value==""){
-        alert("Fill all fields"); return;
-    }
-    loading.style.display="flex";
-
-    setTimeout(()=>{
-        loading.style.display="none";
-        page1.style.display="none";
-        page2.style.display="block";
-        showAmount.innerText=amount.value;
-        insurance.innerText=calc(amount.value);
-    },3000);
+function clearSign() {
+    ctx.clearRect(0, 0, c.width, c.height);
 }
 
-function calc(a){
-    a=parseInt(a);
-    if(a<=60000) return "2,500";
-    if(a<=100000) return "3,500";
-    if(a<=200000) return "4,000";
+/* NEXT PAGE */
+function nextPage() {
+    if (name.value === "" || nic.value === "" || amount.value === "") {
+        alert("කරුණාකර සියලු fields පුරවන්න");
+        return;
+    }
+
+    loading.style.display = "flex";
+
+    setTimeout(() => {
+        loading.style.display = "none";
+        page1.style.display = "none";
+        page2.style.display = "block";
+        showAmount.innerText = amount.value;
+        insurance.innerText = calc(amount.value);
+    }, 3000);
+}
+
+/* INSURANCE */
+function calc(a) {
+    a = parseInt(a);
+    if (a <= 60000) return "2,500";
+    if (a <= 100000) return "3,500";
+    if (a <= 200000) return "4,000";
     return "5,000";
 }
 
 /* SUBMIT */
-function submitForm(){
-    let phone="94XXXXXXXXX"; // change number
+function submitForm() {
+    let phone = "94XXXXXXXXX"; // change number
     let msg;
 
-    if(receipt.files.length===0){
-        msg="මුදල් ගෙවා නොමැත";
-    }else{
-        msg="කරුණාකර receipt image එක upload කරන්න";
+    if (receipt.files.length === 0) {
+        msg = "මුදල් ගෙවා නොමැත";
+    } else {
+        msg = "කරුණාකර receipt image එක upload කරන්න";
     }
 
-    window.location.href=
-    "https://wa.me/"+phone+"?text="+encodeURIComponent(msg);
+    window.location.href =
+        "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
 }
 </script>
 
