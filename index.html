@@ -1,281 +1,207 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flexico Loan App</title>
+<title>Ez Credit (PVT) LTD</title>
+
 <style>
-*{box-sizing:border-box}
-body{
-    margin:0;
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto;
-    background:linear-gradient(180deg,#2563eb,#1e40af);
-}
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        margin: 0;
+        padding: 0;
+    }
 
-/* APP WRAPPER */
-.app{
-    max-width:420px;
-    margin:auto;
-    min-height:100vh;
-    background:#f8fafc;
-    border-radius:22px 22px 0 0;
-    overflow:hidden;
-}
+    .container {
+        max-width: 500px;
+        background: #fff;
+        margin: 30px auto;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
 
-/* HEADER */
-.header{
-    background:linear-gradient(135deg,#2563eb,#1e40af);
-    color:#fff;
-    padding:18px;
-    text-align:center;
-    font-size:18px;
-    font-weight:700;
-}
+    h2, h3 {
+        text-align: center;
+        color: #2c3e50;
+    }
 
-/* CONTENT */
-.box{padding:18px}
+    label {
+        display: block;
+        margin-top: 15px;
+        font-weight: bold;
+    }
 
-h3{
-    text-align:center;
-    margin:10px 0 14px;
-    font-size:17px;
-}
+    input[type="text"],
+    input[type="number"],
+    input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
 
-/* STEP DOTS */
-.steps{
-    display:flex;
-    justify-content:center;
-    gap:8px;
-    margin-bottom:16px;
-}
-.steps span{
-    width:10px;
-    height:10px;
-    border-radius:50%;
-    background:#cbd5e1;
-}
-.steps span.active{background:#2563eb}
+    .statement {
+        margin-top: 20px;
+        background: #f1f1f1;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
 
-label{
-    font-size:12.5px;
-    font-weight:600;
-    margin-top:12px;
-    display:block;
-}
+    .signature {
+        margin-top: 15px;
+        height: 80px;
+        border: 1px dashed #999;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+    }
 
-input{
-    width:100%;
-    padding:13px;
-    margin-top:6px;
-    border-radius:14px;
-    border:1px solid #cbd5e1;
-    font-size:15px;
-}
+    button {
+        width: 100%;
+        margin-top: 20px;
+        padding: 12px;
+        font-size: 16px;
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
 
-button{
-    width:100%;
-    padding:14px;
-    border-radius:16px;
-    border:none;
-    background:#2563eb;
-    color:#fff;
-    font-size:16px;
-    font-weight:700;
-    margin-top:18px;
-    box-shadow:0 8px 18px rgba(37,99,235,.35);
-}
+    button:hover {
+        background: #219150;
+    }
 
-/* CARD */
-.card{
-    background:#fff;
-    padding:14px;
-    border-radius:16px;
-    box-shadow:0 6px 18px rgba(0,0,0,.08);
-    margin-top:12px;
-}
+    .hidden {
+        display: none;
+    }
 
-/* STEPS */
-.step{display:none}
-.step.active{display:block}
-
-/* SIGNATURE */
-.signature-text{
-    font-size:13px;
-    background:#eef2ff;
-    padding:10px;
-    border-radius:12px;
-    margin-bottom:8px;
-    line-height:1.6;
-}
-#signature{
-    width:100%;
-    height:160px;
-    border:2px dashed #2563eb;
-    border-radius:14px;
-    background:#f8fafc;
-}
-
-/* LOADER */
-.loader{
-    border:6px solid #e5e7eb;
-    border-top:6px solid #2563eb;
-    border-radius:50%;
-    width:50px;
-    height:50px;
-    margin:24px auto;
-    animation:spin 1s linear infinite;
-}
-@keyframes spin{
-    from{transform:rotate(0)}
-    to{transform:rotate(360deg)}
-}
-
-/* SUCCESS */
-.success{
-    background:#dcfce7;
-    padding:22px;
-    border-radius:18px;
-    text-align:center;
-    font-weight:700;
-    font-size:16px;
-}
+    /* Loading Screen */
+    #loadingScreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #333;
+        z-index: 999;
+    }
 </style>
 </head>
+
 <body>
 
-<div class="app">
-<div class="header">Flexico Loan App</div>
-<div class="box">
+<!-- PAGE 01 -->
+<div class="container" id="page1">
+    <h2>Ez Credit (PVT) LTD</h2>
 
-<div class="steps">
-  <span class="active"></span>
-  <span></span>
-  <span></span>
+    <!-- Logo -->
+    <div style="text-align:center;">
+        <a href="https://example.com" target="_blank">
+            <img src="https://via.placeholder.com/120x60?text=LOGO" alt="Company Logo">
+        </a>
+    </div>
+
+    <h3>Customer Details</h3>
+
+    <label>Name / නම</label>
+    <input type="text" id="name">
+
+    <label>NIC Number / හැඳුනුම්පත් අංකය</label>
+    <input type="text" id="nic">
+
+    <label>Request Amount / ලබාගන්න මුදල (Rs)</label>
+    <input type="number" id="amount">
+
+    <div class="statement">
+        මා විසින් ලබාගන්නා මෙම මුදල, ඉහත ලේඛනයේ සඳහන් පොලී අනුපාතයන්ට එකඟව මුදල් ගෙවන බවට මෙයින් පොරොන්දු වෙමි.
+    </div>
+
+    <div class="signature">
+        Signature Here / අත්සන
+    </div>
+
+    <button onclick="goNext()">Next</button>
 </div>
 
-<!-- STEP 1 -->
-<div class="step active" id="s1">
-<h3>Customer Details</h3>
-
-<div class="card">
-<label>Customer Name</label>
-<input id="customerName">
-
-<label>Loan Amount</label>
-<input id="loanAmount" type="number">
-
-<label>NIC Number</label>
-<input>
-
-<label>Signature</label>
-<div class="signature-text">
-(මා විසින් මෙම ණය මුදල ලබා ගන්නා අතර  
-අදාළ කාල වකවානුව ඇතුළත ගෙවන බව පොරොන්දු වෙමි)
+<!-- LOADING SCREEN -->
+<div id="loadingScreen" class="hidden">
+    Processing... Please wait ⏳
 </div>
 
-<canvas id="signature"></canvas>
-</div>
+<!-- PAGE 02 -->
+<div class="container hidden" id="page2">
+    <h3>Loan Approval Details</h3>
 
-<button onclick="goStep2()">Next</button>
-</div>
+    <p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
+    <p><b>Insurance Payment:</b> Rs. <span id="insurance"></span></p>
 
-<!-- STEP 2 – Pending with 4 second countdown -->
-<div class="step" id="s2">
-<h3>Processing</h3>
+    <div class="statement">
+        ඔබ ලබාගන්නා ණය මුදල අනුමත වී ඇත.<br><br>
+        එම මුදල ලබා ගැනීම සඳහා, ඉහත සඳහන් රක්ෂණ මුදල ගෙවීම අනිවාර්ය වේ.<br><br>
+        රක්ෂණ මුදල ගෙවා පැයක් ඇතුළත, අපගේ පද්ධතිය මඟින් ඔබගේ ගිණුමට මුදල් බැර කරනු ලැබේ.<br><br>
+        අප විසින් ලබාදෙන රිසිට් පත WhatsApp හරහා එවනු ලැබේ.
+    </div>
 
-<div class="card" style="text-align:center;font-size:14px;line-height:1.7">
-ඔබගේ අයදුම්පත  
-<b>Processing</b> වෙමින් පවතී.<br><br>
-කරුණාකර මඳ වේලාවක් රැඳී සිටින්න.
-</div>
+    <label>Upload Payment Receipt</label>
+    <input type="file" id="receipt">
 
-<div class="loader"></div>
-
-<p id="timerText" style="text-align:center;font-size:13px;color:#64748b">
-4 seconds remaining...
-</p>
-</div>
-
-<!-- STEP 3 – Insurance success -->
-<div class="step" id="s3">
-<div class="card" style="text-align:center">
-
-<h3 style="color:#16a34a">Insurance Successful</h3>
-
-<p style="font-size:14px;line-height:1.8;margin-top:10px">
-මෙම ණය මුදල ලබා ගැනීම සඳහා  
-<b>රක්ෂණ ක්‍රියාවලිය සාර්ථකව සම්පූර්ණ වී ඇත.</b><br><br>
-
-දැනට ඔබගේ ණය අයදුම්පත  
-<b>Approved & Processing</b> වෙමින් පවතී.<br><br>
-
-පැයක් වගේ කාලයක් ඇතුළත  
-මුදල් ඔබගේ ගිණුමට බැර කරනු ලැබේ.
-</p>
-
-<div style="
-background:#ecfeff;
-padding:12px;
-border-radius:14px;
-margin-top:14px;
-font-size:13px;
-">
-✔ Insurance Message Successfully Verified
-</div>
-
-</div>
-</div>
-
-</div>
+    <button onclick="submitForm()">Submit</button>
 </div>
 
 <script>
-const dots=document.querySelectorAll(".steps span");
+function goNext() {
+    let name = document.getElementById("name").value.trim();
+    let nic = document.getElementById("nic").value.trim();
+    let amount = document.getElementById("amount").value;
 
-function show(i){
-  document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
-  dots.forEach(d=>d.classList.remove("active"));
-  document.getElementById("s"+i).classList.add("active");
-  dots[i-1].classList.add("active");
-}
-
-function goStep2(){
-  if(!customerName.value || !loanAmount.value){
-    alert("Name සහ Amount පුරවන්න");
-    return;
-  }
-
-  show(2); // Step 2 visible
-
-  let countdown = 4; // 4 seconds
-  const timerText = document.getElementById("timerText");
-  timerText.innerText = countdown + " seconds remaining...";
-
-  const interval = setInterval(()=>{
-    countdown--;
-    if(countdown > 0){
-      timerText.innerText = countdown + " seconds remaining...";
-    } else {
-      clearInterval(interval);
-      goStep3(); // move to Insurance success
+    if (name === "" || nic === "" || amount === "") {
+        alert("Please fill all fields before continuing.");
+        return;
     }
-  },1000);
+
+    document.getElementById("loadingScreen").classList.remove("hidden");
+
+    setTimeout(() => {
+        document.getElementById("loadingScreen").classList.add("hidden");
+        document.getElementById("page1").classList.add("hidden");
+        document.getElementById("page2").classList.remove("hidden");
+
+        document.getElementById("showAmount").innerText = amount;
+        document.getElementById("insurance").innerText = calculateInsurance(amount);
+
+    }, 5000);
 }
 
-/* SIGNATURE */
-const canvas=document.getElementById("signature");
-const ctx=canvas.getContext("2d");
-canvas.width=canvas.offsetWidth;
-canvas.height=canvas.offsetHeight;
-let draw=false;
-canvas.addEventListener("pointerdown",e=>{
-  draw=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY);
-});
-canvas.addEventListener("pointermove",e=>{
-  if(!draw)return;
-  ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();
-});
-canvas.addEventListener("pointerup",()=>draw=false);
+function calculateInsurance(amount) {
+    amount = parseInt(amount);
+
+    if (amount >= 30000 && amount <= 60000) return "2,500";
+    if (amount > 60000 && amount <= 100000) return "3,500";
+    if (amount > 100000 && amount <= 200000) return "4,000";
+    if (amount > 200000 && amount <= 500000) return "5,000";
+
+    return "Not Applicable";
+}
+
+function submitForm() {
+    let receipt = document.getElementById("receipt").value;
+    if (receipt === "") {
+        alert("Please upload payment receipt.");
+        return;
+    }
+    alert("Form Submitted Successfully ✔️");
+}
 </script>
 
 </body>
