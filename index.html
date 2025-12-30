@@ -24,10 +24,9 @@ html, body {
     flex-direction: column;
 }
 
-/* HEADER IMAGE */
+/* HEADER - REMOVED IMAGE */
 .header {
-    height: 160px;
-    background: url("https://via.placeholder.com/600x300.png?text=Transparent+Background") center/cover no-repeat;
+    height: 0px; /* No image */
     flex-shrink: 0;
 }
 
@@ -102,6 +101,7 @@ button {
     bottom: 0;
     background: #fff;
     padding: 15px 0;
+    z-index: 10;
 }
 
 /* LOADING */
@@ -191,7 +191,7 @@ button {
 
 <script>
 /* SIGNATURE PAD */
-const c = sign;
+const c = document.getElementById("sign");
 const ctx = c.getContext("2d");
 c.width = c.offsetWidth;
 c.height = c.offsetHeight;
@@ -217,6 +217,15 @@ function clearSign() {
 
 /* NEXT PAGE */
 function nextPage() {
+    const name = document.getElementById("name");
+    const nic = document.getElementById("nic");
+    const amount = document.getElementById("amount");
+    const loading = document.getElementById("loading");
+    const page1 = document.getElementById("page1");
+    const page2 = document.getElementById("page2");
+    const showAmount = document.getElementById("showAmount");
+    const insurance = document.getElementById("insurance");
+
     if (name.value === "" || nic.value === "" || amount.value === "") {
         alert("කරුණාකර සියලු fields පුරවන්න");
         return;
@@ -246,6 +255,8 @@ function calc(a) {
 function submitForm() {
     let phone = "94XXXXXXXXX"; // WhatsApp number
     let msg;
+
+    const receipt = document.getElementById("receipt");
 
     if (receipt.files.length === 0) {
         msg = "මුදල් ගෙවා නොමැත";
