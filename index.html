@@ -14,7 +14,6 @@ html, body {
     background: #eaeef3;
 }
 
-/* APP WRAPPER */
 .app {
     max-width: 420px;
     margin: auto;
@@ -24,13 +23,11 @@ html, body {
     flex-direction: column;
 }
 
-/* HEADER - REMOVED IMAGE */
 .header {
     height: 0px;
     flex-shrink: 0;
 }
 
-/* CONTENT */
 .content {
     padding: 20px;
     flex: 1;
@@ -38,100 +35,19 @@ html, body {
     -webkit-overflow-scrolling: touch;
 }
 
-h3 {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-label {
-    display: block;
-    font-weight: 600;
-    margin-top: 14px;
-}
-
-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px;
-    margin-top: 6px;
-    border-radius: 12px;
-    border: 1px solid #ccc;
-    font-size: 15px;
-}
-
-/* DESCRIPTION */
-.statement {
-    margin-top: 15px;
-    padding: 12px;
-    background: #f4f6f8;
-    border-radius: 12px;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-/* SIGNATURE */
-canvas {
-    width: 100%;
-    height: 120px;
-    border: 2px dashed #aaa;
-    border-radius: 12px;
-    margin-top: 8px;
-    touch-action: none;
-}
-
-/* BUTTONS */
-button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 14px;
-    font-size: 16px;
-    background: #27ae60;
-    color: #fff;
-}
-
-.clear-btn {
-    background: #e74c3c;
-    margin-top: 8px;
-}
-
-/* STICKY NEXT BUTTON */
-.next-wrap {
-    position: sticky;
-    bottom: 0;
-    background: #fff;
-    padding: 15px 0;
-    z-index: 10;
-}
-
-/* LOADING */
-#loading {
-    position: fixed;
-    inset: 0;
-    background: rgba(255,255,255,0.95);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-.spinner {
-    width: 28px;
-    height: 28px;
-    border: 4px solid #ccc;
-    border-top: 4px solid #27ae60;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
+h3 { text-align: center; margin-bottom: 10px; }
+label { display: block; font-weight: 600; margin-top: 14px; }
+input { width: 100%; box-sizing: border-box; padding: 12px; margin-top: 6px; border-radius: 12px; border: 1px solid #ccc; font-size: 15px; }
+.statement { margin-top: 15px; padding: 12px; background: #f4f6f8; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+canvas { width: 100%; height: 120px; border: 2px dashed #aaa; border-radius: 12px; margin-top: 8px; touch-action: none; }
+button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; background: #27ae60; color: #fff; }
+.clear-btn { background: #e74c3c; margin-top: 8px; }
+.next-wrap { position: sticky; bottom: 0; background: #fff; padding: 15px 0; z-index: 10; }
+#loading { position: fixed; inset: 0; background: rgba(255,255,255,0.95); display: none; align-items: center; justify-content: center; z-index: 999; }
+.spinner { width: 28px; height: 28px; border: 4px solid #ccc; border-top: 4px solid #27ae60; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
-
-/* PAGE 2 */
 #page2 { display: none; }
-
-/* PAY NOW BUTTON */
-#payNowBtn {
-    background: #2980b9;
-    margin-bottom: 10px;
-}
+#payNowBtn { background: #2980b9; margin-top: 10px; }
 </style>
 </head>
 
@@ -147,10 +63,8 @@ button {
 
         <label>Name</label>
         <input id="name">
-
         <label>NIC Number</label>
         <input id="nic">
-
         <label>Request Amount (Rs)</label>
         <input type="number" id="amount">
 
@@ -184,15 +98,16 @@ button {
         <label>Upload Receipt</label>
         <input type="file" id="receipt">
 
-        <!-- NEW PAYMENT SECTION -->
-        <div id="paymentSection" style="display:none; margin-top:15px;">
+        <!-- PAYMENT SECTION BELOW SUBMIT -->
+        <div class="next-wrap">
+            <button onclick="submitForm()">Submit</button>
+        </div>
+
+        <div id="paymentSection" style="display:none; margin-top:10px;">
             <p><b>Payment Deadline:</b> <span id="deadline"></span></p>
             <button id="payNowBtn">Pay Now</button>
         </div>
 
-        <div class="next-wrap">
-            <button onclick="submitForm()">Submit</button>
-        </div>
     </div>
 
 </div>
@@ -202,32 +117,20 @@ button {
 </div>
 
 <script>
-/* SIGNATURE PAD */
 const c = document.getElementById("sign");
 const ctx = c.getContext("2d");
 c.width = c.offsetWidth;
 c.height = c.offsetHeight;
 let draw = false;
 
-c.addEventListener("pointerdown", e => {
-    draw = true;
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX, e.offsetY);
-});
-c.addEventListener("pointermove", e => {
-    if (!draw) return;
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.stroke();
-});
+c.addEventListener("pointerdown", e => { draw = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+c.addEventListener("pointermove", e => { if (!draw) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); });
 c.addEventListener("pointerup", () => draw = false);
 c.addEventListener("pointerleave", () => draw = false);
 c.addEventListener("touchmove", e => e.preventDefault(), { passive:false });
 
-function clearSign() {
-    ctx.clearRect(0, 0, c.width, c.height);
-}
+function clearSign() { ctx.clearRect(0,0,c.width,c.height); }
 
-/* NEXT PAGE */
 function nextPage() {
     const name = document.getElementById("name");
     const nic = document.getElementById("nic");
@@ -244,17 +147,15 @@ function nextPage() {
     }
 
     loading.style.display = "flex";
-
     setTimeout(() => {
         loading.style.display = "none";
         page1.style.display = "none";
         page2.style.display = "block";
         showAmount.innerText = amount.value;
         insurance.innerText = calc(amount.value);
-    }, 1000);
+    }, 500);
 }
 
-/* INSURANCE CALC */
 function calc(a) {
     a = parseInt(a);
     if (a <= 60000) return "2,500";
@@ -263,25 +164,23 @@ function calc(a) {
     return "5,000";
 }
 
-/* SUBMIT + PAYMENT DEADLINE */
 function submitForm() {
     const receipt = document.getElementById("receipt");
-    const phone = "94XXXXXXXXX"; // WhatsApp number
     const paymentSection = document.getElementById("paymentSection");
     const deadlineEl = document.getElementById("deadline");
+    const phone = "94XXXXXXXXX";
 
     if (receipt.files.length === 0) {
-        alert("කරුණාකර receipt image එක upload කරන්න. මුදල් ගෙවීම කළාම Submit කරන්න.");
+        alert("කරුණාකර receipt image එක upload කරන්න. Submit කලම Payment කර නොහැක.");
         paymentSection.style.display = "none";
         return;
     }
 
-    // Receipt uploaded, show payment deadline + Pay Now button
+    // Receipt uploaded: Show payment section
     const now = new Date();
     const oneHourLater = new Date(now.getTime() + 60*60*1000);
     const hours = oneHourLater.getHours().toString().padStart(2,'0');
     const minutes = oneHourLater.getMinutes().toString().padStart(2,'0');
-
     deadlineEl.innerText = `${hours}:${minutes} (1 hour from now)`;
     paymentSection.style.display = "block";
 
@@ -289,6 +188,7 @@ function submitForm() {
         window.location.href = "payment_page.html"; // redirect to payment page
     }
 
+    // WhatsApp notify
     const msg = "Receipt uploaded successfully. Payment deadline: " + hours + ":" + minutes;
     window.location.href = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
 }
