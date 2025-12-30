@@ -6,12 +6,10 @@
 <title>Ez Credit App</title>
 
 <style>
-/* STOP BODY SCROLL */
 html, body {
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow: hidden;
     font-family: system-ui, Arial;
     background: #eaeef3;
 }
@@ -19,8 +17,8 @@ html, body {
 /* APP WRAPPER */
 .app {
     max-width: 420px;
-    height: 100vh;
     margin: auto;
+    min-height: 100svh;
     background: #fff;
     display: flex;
     flex-direction: column;
@@ -33,14 +31,14 @@ html, body {
     flex-shrink: 0;
 }
 
-/* CONTENT AREA */
+/* CONTENT */
 .content {
     padding: 20px;
-    overflow-y: auto;
     flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* TEXT */
 h3 {
     text-align: center;
     margin-bottom: 10px;
@@ -52,7 +50,6 @@ label {
     margin-top: 14px;
 }
 
-/* INPUTS */
 input {
     width: 100%;
     box-sizing: border-box;
@@ -83,21 +80,28 @@ canvas {
     touch-action: none;
 }
 
-.clear-btn {
-    background: #e74c3c;
-    margin-top: 8px;
-}
-
 /* BUTTONS */
 button {
     width: 100%;
     padding: 14px;
-    margin-top: 20px;
     border: none;
     border-radius: 14px;
     font-size: 16px;
     background: #27ae60;
     color: #fff;
+}
+
+.clear-btn {
+    background: #e74c3c;
+    margin-top: 8px;
+}
+
+/* STICKY NEXT BUTTON */
+.next-wrap {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 15px 0;
 }
 
 /* LOADING */
@@ -120,7 +124,7 @@ button {
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* PAGE 2 HIDE */
+/* PAGE 2 */
 #page2 { display: none; }
 </style>
 </head>
@@ -152,7 +156,9 @@ button {
         <canvas id="sign"></canvas>
         <button class="clear-btn" onclick="clearSign()">Clear Signature</button>
 
-        <button onclick="nextPage()">Next</button>
+        <div class="next-wrap">
+            <button onclick="nextPage()">Next</button>
+        </div>
     </div>
 
     <!-- PAGE 02 -->
@@ -172,7 +178,9 @@ button {
         <label>Upload Receipt</label>
         <input type="file" id="receipt">
 
-        <button onclick="submitForm()">Submit</button>
+        <div class="next-wrap">
+            <button onclick="submitForm()">Submit</button>
+        </div>
     </div>
 
 </div>
@@ -201,6 +209,7 @@ c.addEventListener("pointermove", e => {
 });
 c.addEventListener("pointerup", () => draw = false);
 c.addEventListener("pointerleave", () => draw = false);
+c.addEventListener("touchmove", e => e.preventDefault(), { passive:false });
 
 function clearSign() {
     ctx.clearRect(0, 0, c.width, c.height);
@@ -235,7 +244,7 @@ function calc(a) {
 
 /* SUBMIT */
 function submitForm() {
-    let phone = "94XXXXXXXXX"; // change number
+    let phone = "94XXXXXXXXX"; // WhatsApp number
     let msg;
 
     if (receipt.files.length === 0) {
