@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ez Credit App</title>
-
 <style>
 html, body {
     margin: 0;
@@ -16,11 +15,8 @@ html, body {
 .app {
     max-width: 420px;
     margin: auto;
-    min-height: 100svh;
+    min-height: 100vh;
     background: #fff;
-}
-
-.content {
     padding: 20px;
 }
 
@@ -80,19 +76,17 @@ button {
     background: #e74c3c;
 }
 
-#page2 {
-    display: none;
+.result {
+    margin-top: 20px;
+    padding: 12px;
+    background: #dfe6e9;
+    border-radius: 12px;
 }
 </style>
 </head>
-
 <body>
-
 <div class="app">
-
-<!-- PAGE 01 -->
-<div class="content" id="page1">
-    <h3>Customer Details</h3>
+    <h3>Customer Details & Loan Confirmation</h3>
 
     <label>Name</label>
     <input id="name">
@@ -111,35 +105,25 @@ button {
     <canvas id="sign"></canvas>
     <button class="clear-btn" onclick="clearSign()">Clear Signature</button>
 
-    <button onclick="nextPage()">Next</button>
-</div>
+    <button onclick="showDetails()">Show Confirmation</button>
 
-<!-- PAGE 02 -->
-<div class="content" id="page2">
-    <h3>Loan Approved</h3>
+    <div class="result" id="confirmation" style="display:none;">
+        <p><b>Name:</b> <span id="showName"></span></p>
+        <p><b>NIC Number:</b> <span id="showNIC"></span></p>
+        <p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
+        <p><b>Insurance Amount:</b> Rs. <span id="insurance"></span></p>
 
-    <p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
-    <p><b>Insurance Amount:</b> Rs. <span id="insurance"></span></p>
+        <div class="statement">
+            ඔබ ලබා දුන් තොරතුරු තහවුරු කරමින් මෙම මුදල ඉල්ලීම් වලට අනුකූලව ගෙවීමට සූදානම් බව සනාථ කරමි.
+        </div>
 
-    <!-- PAYMENT INSTRUCTIONS -->
-    <div class="statement">
-        <b>Payment කරන විදිය</b><br><br>
-        ඉහත සඳහන් Insurance මුදල Pay Now button එක click කර ගෙවන්න.<br><br>
-        Payment complete වුනාට පස්සේ,
-        ඔබට ලැබෙන receipt / screenshot එක පහතින් upload කර Submit කරන්න.<br><br>
-        Receipt verify වුනාට පස්සේ පැය 1ක් ඇතුළත මුදල් ඔබගේ ගිණුමට බැර කරනු ලැබේ.
+        <button id="payNowBtn" onclick="goToPayment()">Pay Now</button>
+
+        <label>Upload Payment Receipt</label>
+        <input type="file" id="receipt">
+
+        <button onclick="submitForm()">Submit</button>
     </div>
-
-    <!-- PAY NOW -->
-    <button id="payNowBtn" onclick="goToPayment()">Pay Now</button>
-
-    <!-- RECEIPT UPLOAD -->
-    <label>Upload Payment Receipt</label>
-    <input type="file" id="receipt">
-
-    <button onclick="submitForm()">Submit</button>
-</div>
-
 </div>
 
 <script>
@@ -167,35 +151,34 @@ function clearSign() {
     ctx.clearRect(0, 0, c.width, c.height);
 }
 
-/* Page change */
-function nextPage() {
-    const name = nameInput().value;
-    const nic = nicInput().value;
-    const amount = amountInput().value;
+/* Show confirmation */
+function showDetails() {
+    const name = document.getElementById("name").value.trim();
+    const nic = document.getElementById("nic").value.trim();
+    const amount = document.getElementById("amount").value.trim();
 
-    if (!name || !nic || !amount) {
+    if(!name || !nic || !amount) {
         alert("කරුණාකර සියලු fields පුරවන්න");
         return;
     }
 
-    page1().style.display = "none";
-    page2().style.display = "block";
+    // Check signature
+    const sigData = ctx.getImageData(0,0,c.width,c.height).data;
+    if(sigData.every(v=>v===0)) {
+        alert("කරුණාකර signature එක ලබා දෙන්න");
+        return;
+    }
 
-    showAmount().innerText = amount;
-    insurance().innerText = calc(amount);
+    document.getElementById("showName").innerText = name;
+    document.getElementById("showNIC").innerText = nic;
+    document.getElementById("showAmount").innerText = amount;
+    document.getElementById("insurance").innerText = calcInsurance(amount);
+
+    document.getElementById("confirmation").style.display = "block";
 }
 
-/* Helpers */
-const nameInput = () => document.getElementById("name");
-const nicInput = () => document.getElementById("nic");
-const amountInput = () => document.getElementById("amount");
-const page1 = () => document.getElementById("page1");
-const page2 = () => document.getElementById("page2");
-const showAmount = () => document.getElementById("showAmount");
-const insurance = () => document.getElementById("insurance");
-
 /* Insurance calc */
-function calc(a) {
+function calcInsurance(a) {
     a = parseInt(a);
     if (a <= 60000) return "2,500";
     if (a <= 100000) return "3,500";
@@ -211,15 +194,12 @@ function goToPayment() {
 /* Submit */
 function submitForm() {
     const receipt = document.getElementById("receipt");
-
-    if (receipt.files.length === 0) {
+    if(receipt.files.length === 0) {
         alert("Payment කරලා receipt image එක upload කරන්න");
         return;
     }
-
     alert("Receipt received. පැය 1ක් ඇතුළත මුදල් ඔබගේ ගිණුමට බැර කරනු ලැබේ.");
 }
 </script>
-
 </body>
 </html>
