@@ -160,22 +160,36 @@ const c = document.getElementById("sign");
 const ctx = c.getContext("2d");
 ctx.lineWidth = 3;
 ctx.lineCap = "round";
-c.width = c.offsetWidth;
-c.height = c.offsetHeight;
+
+function resizeCanvas(){
+    const ratio = window.devicePixelRatio || 1;
+    c.width = c.offsetWidth * ratio;
+    c.height = c.offsetHeight * ratio;
+    ctx.setTransform(ratio,0,0,ratio,0,0);
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
 let drawing = false;
-c.addEventListener("pointerdown", e => {
-    drawing = true;
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX, e.offsetY);
-});
-c.addEventListener("pointermove", e => {
-    if(!drawing) return;
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.stroke();
-});
+c.addEventListener("pointerdown", e => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+c.addEventListener("pointermove", e => { if(!drawing) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); });
 c.addEventListener("pointerup", ()=>drawing=false);
 c.addEventListener("pointerleave", ()=>drawing=false);
+
+/* Touch fallback for older devices */
+c.addEventListener("touchstart", e => {
+    const t = e.touches[0];
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(t.clientX - c.getBoundingClientRect().left, t.clientY - c.getBoundingClientRect().top);
+});
+c.addEventListener("touchmove", e => {
+    if(!drawing) return;
+    const t = e.touches[0];
+    ctx.lineTo(t.clientX - c.getBoundingClientRect().left, t.clientY - c.getBoundingClientRect().top);
+    ctx.stroke();
+});
+c.addEventListener("touchend", ()=>drawing=false);
 
 function clearSign(){ ctx.clearRect(0,0,c.width,c.height); }
 
@@ -201,8 +215,6 @@ function goNext(){
     setTimeout(()=>{
         document.getElementById("loading").style.display = "none";
         document.getElementById("page2").style.display = "block";
-
-        document.getElementById("showAmount")?.innerText = amount;
     },7000);
 }
 
@@ -224,7 +236,7 @@ function submitForm(){
 Check Time: ${checkTime.toLocaleTimeString()}
 Loan Release: ${loanRelease.toLocaleTimeString()}`;
 
-    // Open WhatsApp
+    // WhatsApp
     window.open(
         "https://wa.me/"+WHATSAPP_NO+"?text="+encodeURIComponent(msg),
         "_blank"
