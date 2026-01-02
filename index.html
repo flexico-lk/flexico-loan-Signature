@@ -7,126 +7,75 @@
 
 <style>
 *{box-sizing:border-box;}
+body{margin:0;font-family:system-ui,Arial;background:#eaeef3}
+.app{max-width:420px;margin:auto;min-height:100vh;background:#fff}
+.page{padding:16px}
+h3{text-align:center}
 
-body{
-    margin:0;
-    font-family:system-ui, Arial;
-    background:#eaeef3;
-}
-
-.app{
-    max-width:420px;
-    margin:auto;
-    min-height:100vh;
-    background:#fff;
-}
-
-.page{padding:16px;}
-h3{text-align:center;}
-
-label{
-    display:block;
-    margin-top:14px;
-    font-weight:600;
-}
-
+label{display:block;margin-top:14px;font-weight:600}
 input{
-    width:100%;
-    padding:14px;
-    margin-top:6px;
-    border-radius:12px;
-    border:1px solid #ccc;
-    font-size:16px;
+ width:100%;padding:14px;margin-top:6px;
+ border-radius:12px;border:1px solid #ccc;font-size:16px
 }
 
 button{
-    width:100%;
-    padding:14px;
-    margin-top:14px;
-    border:none;
-    border-radius:14px;
-    font-size:16px;
-    color:#fff;
-    background:#27ae60;
+ width:100%;padding:14px;margin-top:14px;
+ border:none;border-radius:14px;font-size:16px;
+ color:#fff;background:#27ae60
 }
 
-.clear-btn{background:#e74c3c;}
-.pay-btn{background:#2980b9;}
-.whatsapp-btn{background:#25D366;}
-.help-btn{background:#7f8c8d;}
-
+.clear-btn{background:#e74c3c}
+.pay-btn{background:#2980b9}
+.whatsapp-btn{background:#25D366}
+.help-btn{background:#7f8c8d}
 .option-btn{background:#34495e}
 
-/* Bank colors */
-.bank-sampath{background:#8e44ad;}
-.bank-boc{background:#2980b9;}
-.bank-commercial{background:#2c3e50;}
-.bank-nsb{background:#27ae60;}
+.bank-sampath{background:#8e44ad}
+.bank-boc{background:#2980b9}
+.bank-commercial{background:#2c3e50}
+.bank-nsb{background:#27ae60}
 
 canvas{
-    width:100%;
-    height:160px;
-    border:2px dashed #aaa;
-    border-radius:12px;
-    margin-top:8px;
-    touch-action:none;
+ width:100%;height:160px;border:2px dashed #aaa;
+ border-radius:12px;margin-top:8px;touch-action:none
 }
 
 .statement{
-    margin-top:12px;
-    padding:12px;
-    background:#f4f6f8;
-    border-radius:12px;
-    font-size:14px;
-    line-height:1.5;
+ margin-top:12px;padding:12px;
+ background:#f4f6f8;border-radius:12px;
+ font-size:14px;line-height:1.5
 }
 
-#page2,#page3{display:none;}
+#page2,#page3{display:none}
 
 /* LOADING */
 #loading{
-    position:fixed;
-    inset:0;
-    background:rgba(255,255,255,.95);
-    display:none;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    z-index:999;
+ position:fixed;inset:0;
+ background:rgba(255,255,255,.95);
+ display:none;flex-direction:column;
+ align-items:center;justify-content:center;
+ z-index:999
 }
-
 .spinner{
-    width:48px;
-    height:48px;
-    border:5px solid #6dd5fa;
-    border-top:5px solid #27ae60;
-    border-radius:50%;
-    animation:spin 1s linear infinite;
-    margin-bottom:20px;
+ width:48px;height:48px;
+ border:5px solid #6dd5fa;
+ border-top:5px solid #27ae60;
+ border-radius:50%;
+ animation:spin 1s linear infinite;
+ margin-bottom:20px
 }
-@keyframes spin{100%{transform:rotate(360deg);}}
+@keyframes spin{100%{transform:rotate(360deg)}}
 
 /* POPUP */
 #popup{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.4);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    pointer-events:none;
-    transition:.25s;
-    z-index:1000;
+ position:fixed;inset:0;background:rgba(0,0,0,.4);
+ display:flex;align-items:center;justify-content:center;
+ opacity:0;pointer-events:none;transition:.25s;z-index:1000
 }
-#popup.active{opacity:1;pointer-events:auto;}
+#popup.active{opacity:1;pointer-events:auto}
 .popup-box{
-    background:#fff;
-    padding:20px;
-    width:85%;
-    max-width:320px;
-    border-radius:14px;
-    text-align:center;
+ background:#fff;padding:20px;width:85%;
+ max-width:320px;border-radius:14px;text-align:center
 }
 </style>
 </head>
@@ -177,9 +126,7 @@ canvas{
 <input type="file" id="receipt" accept="image/*">
 
 <button onclick="submitForm()">Submit</button>
-
 <button class="pay-btn" onclick="goPayment()">Pay Now</button>
-
 <button class="whatsapp-btn" onclick="sendPage2WhatsApp()">WhatsApp Message</button>
 </div>
 
@@ -224,11 +171,31 @@ canvas{
 <script>
 const WHATSAPP_NO="94742089009";
 
+const page1=document.getElementById("page1");
+const page2=document.getElementById("page2");
+const page3=document.getElementById("page3");
+
+const nameInput=document.getElementById("name");
+const nicInput=document.getElementById("nic");
+const amountInput=document.getElementById("amount");
+
+const customerId=document.getElementById("customerId");
+const showName=document.getElementById("showName");
+const showAmount=document.getElementById("showAmount");
+const insurance=document.getElementById("insurance");
+const receipt=document.getElementById("receipt");
+
+const onlineOptions=document.getElementById("onlineOptions");
+const cashOptions=document.getElementById("cashOptions");
+const payTypeBtns=document.getElementById("payTypeBtns");
+
+const popup=document.getElementById("popup");
+const popupText=document.getElementById("popupText");
+const loading=document.getElementById("loading");
+
 let AUTO_CUSTOMER_ID="",paymentType="",paymentMethod="";
 
 /* POPUP */
-const popup=document.getElementById("popup");
-const popupText=document.getElementById("popupText");
 function showPopup(msg){
  popupText.innerText=msg;
  popup.classList.add("active");
@@ -263,19 +230,21 @@ function clearSign(){ctx.clearRect(0,0,c.width,c.height)}
 
 /* PAGE FLOW */
 function goNext(){
- if(!name.value||!nic.value||!amount.value){
-  showPopup("කරුණාකර සියලු fields පුරවන්න");return;
+ if(!nameInput.value.trim() || !nicInput.value.trim() || !amountInput.value){
+  showPopup("කරුණාකර සියලු විස්තර පුරවන්න");
+  return;
  }
 
  loading.style.display="flex";
 
  setTimeout(()=>{
   loading.style.display="none";
+
   AUTO_CUSTOMER_ID=generateCustomerId();
   customerId.innerText=AUTO_CUSTOMER_ID;
-  showName.innerText=name.value;
-  showAmount.innerText=amount.value;
-  insurance.innerText=calculateInsurance(amount.value);
+  showName.innerText=nameInput.value;
+  showAmount.innerText=amountInput.value;
+  insurance.innerText=calculateInsurance(amountInput.value);
 
   page1.style.display="none";
   page2.style.display="block";
@@ -284,7 +253,8 @@ function goNext(){
 
 function submitForm(){
  if(!receipt.files.length){
-  showPopup("Receipt upload කරන්න");return;
+  showPopup("Receipt upload කරන්න");
+  return;
  }
  showPopup("Receipt uploaded successfully");
 }
@@ -298,7 +268,7 @@ function goPayment(){
 function sendPage2WhatsApp(){
  const msg=`Customer Details ✅
 Customer ID: ${AUTO_CUSTOMER_ID}
-Name: ${name.value}
+Name: ${nameInput.value}
 Amount: Rs.${showAmount.innerText}
 Insurance: Rs.${insurance.innerText}`;
  window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`);
@@ -313,11 +283,12 @@ function selectType(t){
  cashOptions.style.display=(t==="Cash")?"block":"none";
 }
 
-function selectMethod(m){paymentMethod=m;}
+function selectMethod(m){paymentMethod=m}
 
 function confirmPayment(){
  if(!paymentMethod){
-  showPopup("Payment method select කරන්න");return;
+  showPopup("Payment method select කරන්න");
+  return;
  }
  const msg=`Payment Details ✅
 Customer ID: ${AUTO_CUSTOMER_ID}
@@ -334,5 +305,6 @@ function sendHelp(){
  window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`);
 }
 </script>
+
 </body>
 </html>
