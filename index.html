@@ -37,6 +37,7 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 </head>
 <body>
 <div class="app">
+
 <!-- PAGE 1 -->
 <div class="page" id="page1">
 <h3>Customer Details</h3>
@@ -71,6 +72,7 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 <button class="pay-btn" onclick="payNow()">Pay Now</button>
 <button class="whatsapp-btn" onclick="sendWhatsApp()">WhatsApp මගින් විස්තර යවන්න</button>
 </div>
+
 </div>
 
 <!-- LOADING -->
@@ -88,39 +90,27 @@ let EZ_ID="";
 /* INSURANCE */
 function calculateInsurance(a){a=parseInt(a);if(a<=50000) return 3000;if(a<=100000) return 3500;return 4000;}
 
-/* SIGNATURE PAD - smooth touch tilt */
+/* SIGNATURE PAD - full display, touch friendly */
 const c=document.getElementById("sign");
 const ctx=c.getContext("2d");
 function resizeCanvas(){
- const r=c.getBoundingClientRect();
+ const container=c.parentElement;
  const ratio=window.devicePixelRatio||1;
- c.width=r.width*ratio;
- c.height=r.height*ratio;
+ c.width=container.clientWidth*ratio;
+ c.height=160*ratio; // fixed height
+ c.style.width=container.clientWidth+"px";
+ c.style.height="160px";
  ctx.setTransform(ratio,0,0,ratio,0,0);
- ctx.lineWidth=2.5;
+ ctx.lineWidth=3;
  ctx.lineCap="round";
 }
 resizeCanvas();
-let draw=false, lastX=0, lastY=0;
-c.onpointerdown = e => {
- draw=true;
- lastX=e.offsetX; lastY=e.offsetY;
- ctx.beginPath(); ctx.moveTo(lastX,lastY);
-};
-c.onpointermove = e => {
- if(!draw) return;
- let dx = e.offsetX - lastX;
- let dy = e.offsetY - lastY;
- let angle = Math.atan2(dy, dx) * 0.05; // tiny natural tilt
- ctx.save();
- ctx.translate(e.offsetX, e.offsetY);
- ctx.rotate(angle);
- ctx.lineTo(e.offsetX, e.offsetY);
- ctx.stroke();
- ctx.restore();
- lastX=e.offsetX; lastY=e.offsetY;
-};
-c.onpointerup=c.onpointerleave = ()=> draw=false;
+window.addEventListener("resize",resizeCanvas);
+
+let drawing=false,lastX=0,lastY=0;
+c.onpointerdown=e=>{drawing=true;lastX=e.offsetX;lastY=e.offsetY;ctx.beginPath();ctx.moveTo(lastX,lastY);}
+c.onpointermove=e=>{if(!drawing) return; ctx.lineTo(e.offsetX,e.offsetY); ctx.stroke(); lastX=e.offsetX; lastY=e.offsetY;}
+c.onpointerup=c.onpointerleave=()=>drawing=false;
 function clearSign(){ctx.clearRect(0,0,c.width,c.height);resizeCanvas();}
 
 /* PAGE 1 AUTO SCROLL */
@@ -150,11 +140,7 @@ function goNext(){
 }
 
 /* PAY */
-function payNow(){
- loading.style.display="flex";
- loadingText.innerText="Payment gateway load වෙමින් පවතී...";
- setTimeout(()=>{loading.style.display="none";window.open(PAY_LINK,"_blank");},2000);
-}
+function payNow(){loading.style.display="flex"; loadingText.innerText="Payment gateway load වෙමින් පවතී..."; setTimeout(()=>{loading.style.display="none";window.open(PAY_LINK,"_blank");},2000);}
 
 /* WHATSAPP */
 function sendWhatsApp(){
