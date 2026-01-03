@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EzC Signature App</title>
-
 <style>
 *{box-sizing:border-box;}
 body{margin:0;font-family:system-ui, Arial;background:#eaeef3;}
@@ -23,10 +22,24 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 #popup{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.25s;z-index:1000;}
 #popup.active{opacity:1;pointer-events:auto;}
 .popup-box{background:#fff;padding:20px;width:85%;max-width:320px;border-radius:14px;text-align:center;}
+#loading{
+  position:fixed; inset:0; background:rgba(255,255,255,.95);
+  display:none; flex-direction:column; align-items:center; justify-content:center; z-index:999;
+}
+.spinner{
+  width:48px; height:48px; border:5px solid #6dd5fa; border-top:5px solid #27ae60; border-radius:50%;
+  animation:spin 1s linear infinite; margin-bottom:20px;
+}
+@keyframes spin{100%{transform:rotate(360deg);}}
 </style>
 </head>
-
 <body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div>Processing...</div>
+</div>
+
 <div class="app">
 
 <!-- PAGE 1 -->
@@ -87,14 +100,13 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 </div>
 </div>
 
-<!-- jsPDF + html2canvas CDN -->
+<!-- jsPDF + html2canvas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
 const PAY_LINK="https://example.com/pay";
 const WHATSAPP_NO="94742089009";
-
 let AUTO_CUSTOMER_ID="";
 
 // POPUP
@@ -124,55 +136,49 @@ function calculateInsurance(amount){
 // SIGNATURE
 const c=document.getElementById("sign");
 const ctx=c.getContext("2d");
-ctx.lineWidth=3;
-ctx.lineCap="round";
-ctx.lineJoin="round";
-
+ctx.lineWidth=3; ctx.lineCap="round"; ctx.lineJoin="round";
 let drawing=false;
-function resizeCanvas(){
- const rect=c.getBoundingClientRect();
- c.width=rect.width;
- c.height=rect.height;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+function resizeCanvas(){ const rect=c.getBoundingClientRect(); c.width=rect.width; c.height=rect.height;}
+resizeCanvas(); window.addEventListener("resize",resizeCanvas);
 
-c.addEventListener("pointerdown",e=>{ drawing=true; ctx.beginPath(); ctx.moveTo(e.offsetX,e.offsetY); });
-c.addEventListener("pointermove",e=>{ if(!drawing)return; ctx.lineTo(e.offsetX,e.offsetY); ctx.stroke(); });
+c.addEventListener("pointerdown",e=>{drawing=true; ctx.beginPath(); ctx.moveTo(e.offsetX,e.offsetY);});
+c.addEventListener("pointermove",e=>{if(!drawing)return; ctx.lineTo(e.offsetX,e.offsetY); ctx.stroke();});
 c.addEventListener("pointerup",()=>drawing=false);
 c.addEventListener("pointerleave",()=>drawing=false);
+function clearSign(){ ctx.clearRect(0,0,c.width,c.height);}
+function isSignatureEmpty(){ const blank=document.createElement("canvas"); blank.width=c.width; blank.height=c.height; return c.toDataURL()===blank.toDataURL();}
 
-function clearSign(){ ctx.clearRect(0,0,c.width,c.height); }
+// PAGE FLOW WITH LOADING
+const page1=document.getElementById("page1");
+const page2=document.getElementById("page2");
+const loading=document.getElementById("loading");
 
-function isSignatureEmpty(){
- const blank=document.createElement("canvas");
- blank.width=c.width; blank.height=c.height;
- return c.toDataURL()===blank.toDataURL();
-}
-
-// PAGE FLOW
 function goNext(){
  const name=document.getElementById("name").value.trim();
  const nic=document.getElementById("nic").value.trim();
  const amount=document.getElementById("amount").value;
+ if(!name||!nic||!amount){ showPopup("කරුණාකර සියලු fields පුරවන්න"); return;}
+ if(isSignatureEmpty()){ showPopup("කරුණාකර signature එකක් දමන්න"); return;}
 
- if(!name || !nic || !amount){ showPopup("කරුණාකර සියලු fields පුරවන්න"); return; }
- if(isSignatureEmpty()){ showPopup("කරුණාකර signature එකක් දමන්න"); return; }
+ loading.style.display="flex"; // show spinner
 
- AUTO_CUSTOMER_ID=generateCustomerId();
- document.getElementById("customerId").innerText=AUTO_CUSTOMER_ID;
- document.getElementById("showAmount").innerText=amount;
- document.getElementById("insurance").innerText=calculateInsurance(amount);
+ setTimeout(()=>{
+   AUTO_CUSTOMER_ID=generateCustomerId();
+   document.getElementById("customerId").innerText=AUTO_CUSTOMER_ID;
+   document.getElementById("showAmount").innerText=amount;
+   document.getElementById("insurance").innerText=calculateInsurance(amount);
 
- document.getElementById("page1").style.display="none";
- document.getElementById("page2").style.display="block";
+   loading.style.display="none";
+   page1.style.display="none";
+   page2.style.display="block";
+ },3000); // 3 sec simulated loan processing
 }
 
 // SUBMIT
 function submitForm(){
  const receiptInput=document.getElementById("receipt");
  if(receiptInput.files.length===0){ showPopup("කරුණාකර receipt upload කරන්න"); return; }
- // Generate PDF
+ showPopup("Receipt uploaded successfully. WhatsApp click කරන්න.");
  generatePDF();
 }
 
@@ -188,7 +194,9 @@ Loan Amount: Rs.${amount}
 Insurance Amount: Rs.${insuranceVal}
 Time: ${new Date().toLocaleString()}
 PDF attach කරලා WhatsApp මගින් send කරන්න`;
- window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,"_blank");
+
+ showPopup("Transfer initiated / WhatsApp opened");
+ setTimeout(()=>{ window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,"_blank"); },500);
 }
 
 document.getElementById("whatsappBtn").onclick=sendWhatsApp;
@@ -197,42 +205,37 @@ document.getElementById("whatsappBtn").onclick=sendWhatsApp;
 async function generatePDF(){
  const { jsPDF } = window.jspdf;
  const doc = new jsPDF();
-
- // Customer details
  const name=document.getElementById("name").value;
  const amount=document.getElementById("showAmount").innerText;
  const insurance=document.getElementById("insurance").innerText;
 
- doc.setFontSize(14);
- doc.text("EzC Loan Approval", 105, 20, {align:"center"});
+ doc.setFontSize(14); doc.text("EzC Loan Approval",105,20,{align:"center"});
  doc.setFontSize(12);
- doc.text(`Customer Name: ${name}`, 20, 40);
- doc.text(`Customer ID: ${AUTO_CUSTOMER_ID}`, 20, 50);
- doc.text(`Loan Amount: Rs.${amount}`, 20, 60);
- doc.text(`Insurance Amount: Rs.${insurance}`, 20, 70);
- doc.text(`Date: ${new Date().toLocaleString()}`, 20, 80);
+ doc.text(`Customer Name: ${name}`,20,40);
+ doc.text(`Customer ID: ${AUTO_CUSTOMER_ID}`,20,50);
+ doc.text(`Loan Amount: Rs.${amount}`,20,60);
+ doc.text(`Insurance Amount: Rs.${insurance}`,20,70);
+ doc.text(`Date: ${new Date().toLocaleString()}`,20,80);
 
- // Signature
- const sigData = c.toDataURL("image/png");
- doc.text("Signature:", 20, 90);
+ const sigData=c.toDataURL("image/png");
+ doc.text("Signature:",20,90);
  doc.addImage(sigData,"PNG",20,95,170,40);
 
- // Receipt
  const receiptInput=document.getElementById("receipt");
  if(receiptInput.files.length>0){
-  const file = receiptInput.files[0];
-  const reader = new FileReader();
-  reader.onload = function(e){
-   const imgData = e.target.result;
-   doc.text("Receipt:",20,140);
-   doc.addImage(imgData,"PNG",20,145,170,80);
+   const file=receiptInput.files[0];
+   const reader=new FileReader();
+   reader.onload=function(e){
+     const imgData=e.target.result;
+     doc.text("Receipt:",20,140);
+     doc.addImage(imgData,"PNG",20,145,170,80);
+     doc.save(`Loan-${AUTO_CUSTOMER_ID}.pdf`);
+     showPopup("PDF generated. WhatsApp open කර attach කරන්න.");
+   }
+   reader.readAsDataURL(file);
+ } else{
    doc.save(`Loan-${AUTO_CUSTOMER_ID}.pdf`);
    showPopup("PDF generated. WhatsApp open කර attach කරන්න.");
-  }
-  reader.readAsDataURL(file);
- } else {
-  doc.save(`Loan-${AUTO_CUSTOMER_ID}.pdf`);
-  showPopup("PDF generated. WhatsApp open කර attach කරන්න.");
  }
 }
 </script>
