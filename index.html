@@ -121,6 +121,10 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 රක්ෂණ මුදල ගෙවීමෙන් පසු පැයක් ඇතුළත මුදල් බැර කෙරේ.
 </div>
 
+<!-- Receipt Upload -->
+<label>Upload Receipt</label>
+<input type="file" id="receiptUpload">
+
 <button class="info-btn" onclick="openInsuranceInfo()">Insurance Payment හේතුව</button>
 <button class="pay-btn" onclick="payNow()">Pay Now</button>
 <button class="whatsapp-btn" onclick="sendWhatsApp()">WhatsApp මගින් විස්තර යවන්න</button>
@@ -229,11 +233,18 @@ function goNext(){
 
   setTimeout(()=>page2.scrollIntoView({behavior:"smooth"}),200);
 
-  // Animate Page 2 Progress Bar
-  animateProgressBar("progress2", 60, 100, 2000);
+  // Animate Page 2 Progress Bar from 60% → 90% until receipt uploaded
+  animateProgressBar("progress2", 60, 90, 2000);
 
  },8000);
 }
+
+/* Receipt Upload Progress Simulation */
+const receiptInput = document.getElementById("receiptUpload");
+receiptInput.addEventListener("change", ()=>{
+  // Animate progress bar 90% → 100%
+  animateProgressBar("progress2", 90, 100, 2000);
+});
 
 /* PAY BUTTON */
 function payNow(){
