@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>EzC Signature App</title>
-
 <style>
 *{box-sizing:border-box;}
 body{margin:0;font-family:system-ui;background:#eaeef3;}
@@ -18,8 +17,8 @@ input, textarea, select{
  margin-top:6px;
  border-radius:12px;
  border:1px solid #ccc;
- font-size:16px;                 
- -webkit-text-size-adjust:100%;  
+ font-size:16px;
+ -webkit-text-size-adjust:100%;
  line-height:1.4;
 }
 button{width:100%;padding:14px;margin-top:14px;border:none;border-radius:14px;font-size:16px;color:#fff;}
@@ -60,23 +59,31 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 /* Progress Bar Styles */
 .progress-container {
   width: 100%;
-  height: 12px;
+  height: 18px;
   background: #eee;
-  border-radius: 6px;
+  border-radius: 9px;
   margin-top: 20px;
   overflow: hidden;
+  position: relative;
 }
-
 .progress-bar {
   width: 0%;
   height: 100%;
   background: #27ae60;
-  border-radius: 6px;
-  transition: width 0.5s ease-in-out;
+  border-radius: 9px;
+  transition: width 0.3s ease-in-out;
+}
+.progress-num {
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:12px;
+  color:#000;
+  font-weight:600;
 }
 </style>
 </head>
-
 <body>
 <div class="app">
 
@@ -86,10 +93,8 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 
 <label>Name</label>
 <input id="name">
-
 <label>NIC</label>
 <input id="nic">
-
 <label>Amount (Rs)</label>
 <input type="number" id="amount">
 
@@ -106,6 +111,7 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 <!-- Page 1 Progress Bar -->
 <div class="progress-container">
   <div class="progress-bar" id="progress1"></div>
+  <div class="progress-num" id="progressNum1">0%</div>
 </div>
 </div>
 
@@ -121,7 +127,6 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 රක්ෂණ මුදල ගෙවීමෙන් පසු පැයක් ඇතුළත මුදල් බැර කෙරේ.
 </div>
 
-<!-- Receipt Upload -->
 <label>Upload Receipt</label>
 <input type="file" id="receiptUpload">
 
@@ -132,6 +137,7 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 <!-- Page 2 Progress Bar -->
 <div class="progress-container">
   <div class="progress-bar" id="progress2"></div>
+  <div class="progress-num" id="progressNum2">0%</div>
 </div>
 </div>
 </div>
@@ -152,15 +158,18 @@ let EZ_ID="";
 /* INSURANCE CALC */
 function calculateInsurance(a){
  a=parseInt(a);
- if(a<=50000) return 3000;
- if(a<=100000) return 3500;
- return 4000;
+ if(a>=30000 && a<=50000) return 2700;
+ if(a>50000 && a<=100000) return 3000;
+ if(a>100000 && a<=200000) return 3500;
+ if(a>200000 && a<=300000) return 4000;
+ if(a>300000 && a<=400000) return 4500;
+ if(a>400000 && a<=500000) return 5000;
+ return 0;
 }
 
 /* SIGNATURE PAD */
 const c=document.getElementById("sign");
 const ctx=c.getContext("2d");
-
 function resizeCanvas(){
  const r=c.getBoundingClientRect();
  const ratio=window.devicePixelRatio||1;
@@ -171,37 +180,34 @@ function resizeCanvas(){
  ctx.lineCap="round";
 }
 resizeCanvas();
-
 let draw=false;
 c.onpointerdown=e=>{draw=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY);}
 c.onpointermove=e=>{if(draw){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();}}
 c.onpointerup=()=>draw=false;
 c.onpointerleave=()=>draw=false;
-
 function clearSign(){ctx.clearRect(0,0,c.width,c.height);resizeCanvas();}
 
 /* PAGE 1 AUTO SCROLL */
 const nameEl=document.getElementById("name");
 const nicEl=document.getElementById("nic");
 const amountEl=document.getElementById("amount");
-
-function scrollToEl(el){
- setTimeout(()=>el.scrollIntoView({behavior:"smooth",block:"center"}),150);
-}
-
+function scrollToEl(el){setTimeout(()=>el.scrollIntoView({behavior:"smooth",block:"center"}),150);}
 nameEl.addEventListener("change",()=>{if(nameEl.value.length>2) scrollToEl(nicEl);});
 nicEl.addEventListener("change",()=>{if(nicEl.value.length>5) scrollToEl(amountEl);});
 amountEl.addEventListener("change",()=>{if(amountEl.value>0) scrollToEl(c);});
 
 /* PROGRESS BAR ANIMATION */
-function animateProgressBar(barId, start=60, end=100, duration=2000){
-  const bar = document.getElementById(barId);
-  let startTime = null;
+function animateProgressBar(barId,numId,start=0,end=100,duration=2000){
+  const bar=document.getElementById(barId);
+  const num=document.getElementById(numId);
+  let startTime=null;
   function step(timestamp){
-    if(!startTime) startTime = timestamp;
-    const progress = Math.min((timestamp - startTime) / duration, 1);
-    bar.style.width = (start + (end - start) * progress) + "%";
-    if(progress < 1) window.requestAnimationFrame(step);
+    if(!startTime) startTime=timestamp;
+    const progress=Math.min((timestamp-startTime)/duration,1);
+    const value=start + (end-start)*progress;
+    bar.style.width=value+"%";
+    num.innerText=Math.floor(value)+"%";
+    if(progress<1) window.requestAnimationFrame(step);
   }
   window.requestAnimationFrame(step);
 }
@@ -213,8 +219,8 @@ function goNext(){
   return;
  }
 
- // Animate Page 1 Progress Bar
- animateProgressBar("progress1", 60, 100, 3000);
+ // Animate Page1 progress
+ animateProgressBar("progress1","progressNum1",60,100,3000);
 
  loading.style.display="flex";
  loadingText.innerText="විස්තර upload කරමින් පවතී...";
@@ -233,18 +239,37 @@ function goNext(){
 
   setTimeout(()=>page2.scrollIntoView({behavior:"smooth"}),200);
 
-  // Animate Page 2 Progress Bar from 60% → 90% until receipt uploaded
-  animateProgressBar("progress2", 60, 90, 2000);
+  // Start Page2 progress bar at 60%
+  animateProgressBar("progress2","progressNum2",60,90,2000);
 
  },8000);
 }
 
-/* Receipt Upload Progress Simulation */
-const receiptInput = document.getElementById("receiptUpload");
-receiptInput.addEventListener("change", ()=>{
-  // Animate progress bar 90% → 100%
-  animateProgressBar("progress2", 90, 100, 2000);
+/* REAL-TIME RECEIPT UPLOAD PROGRESS */
+const receiptInput=document.getElementById("receiptUpload");
+receiptInput.addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onprogress=evt=>{
+    if(evt.lengthComputable){
+      let percent=Math.floor((evt.loaded/evt.total)*100);
+      if(percent<90) percent=60 + Math.floor((percent/100)*30); // Map 0-100 to 60-90%
+      progressBarUpdate(percent);
+    }
+  }
+  reader.onloadend=()=>{
+    progressBarUpdate(100);
+  }
+  reader.readAsArrayBuffer(file);
 });
+
+function progressBarUpdate(percent){
+  const bar=document.getElementById("progress2");
+  const num=document.getElementById("progressNum2");
+  bar.style.width=percent+"%";
+  num.innerText=percent+"%";
+}
 
 /* PAY BUTTON */
 function payNow(){
