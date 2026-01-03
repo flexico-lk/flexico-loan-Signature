@@ -88,7 +88,7 @@ let EZ_ID="";
 /* INSURANCE */
 function calculateInsurance(a){a=parseInt(a);if(a<=50000) return 3000;if(a<=100000) return 3500;return 4000;}
 
-/* SIGNATURE PAD WITH ROTATION */
+/* SIGNATURE PAD - smooth touch tilt */
 const c=document.getElementById("sign");
 const ctx=c.getContext("2d");
 function resizeCanvas(){
@@ -102,20 +102,25 @@ function resizeCanvas(){
 }
 resizeCanvas();
 let draw=false, lastX=0, lastY=0;
-c.onpointerdown=e=>{draw=true; lastX=e.offsetX; lastY=e.offsetY; ctx.beginPath(); ctx.moveTo(lastX,lastY);}
-c.onpointermove=e=>{
+c.onpointerdown = e => {
+ draw=true;
+ lastX=e.offsetX; lastY=e.offsetY;
+ ctx.beginPath(); ctx.moveTo(lastX,lastY);
+};
+c.onpointermove = e => {
  if(!draw) return;
- let angle = Math.atan2(e.offsetY-lastY, e.offsetX-lastX)/2; // rotation effect
+ let dx = e.offsetX - lastX;
+ let dy = e.offsetY - lastY;
+ let angle = Math.atan2(dy, dx) * 0.05; // tiny natural tilt
  ctx.save();
- ctx.translate(e.offsetX,e.offsetY);
+ ctx.translate(e.offsetX, e.offsetY);
  ctx.rotate(angle);
- ctx.lineTo(e.offsetX,e.offsetY);
+ ctx.lineTo(e.offsetX, e.offsetY);
  ctx.stroke();
  ctx.restore();
  lastX=e.offsetX; lastY=e.offsetY;
 };
-c.onpointerup=()=>draw=false;
-c.onpointerleave=()=>draw=false;
+c.onpointerup=c.onpointerleave = ()=> draw=false;
 function clearSign(){ctx.clearRect(0,0,c.width,c.height);resizeCanvas();}
 
 /* PAGE 1 AUTO SCROLL */
@@ -130,8 +135,7 @@ amountEl.addEventListener("change",()=>{if(amountEl.value>0) scrollToEl(c);});
 /* NEXT PAGE */
 function goNext(){
  if(!nameEl.value||!nicEl.value||!amountEl.value){alert("කරුණාකර සියලු fields පුරවන්න");return;}
- loading.style.display="flex";
- loadingText.innerText="විස්තර upload කරමින් පවතී...";
+ loading.style.display="flex"; loadingText.innerText="විස්තර upload කරමින් පවතී...";
  setTimeout(()=>loadingText.innerText="ණය මුදල් ලබා ගැනීමට ඉදිරි පියවර complete කරමින්...",5000);
  setTimeout(()=>{
   loading.style.display="none";
