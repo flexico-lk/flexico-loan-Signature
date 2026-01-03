@@ -2,132 +2,27 @@
 <html lang="si">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EzC Signature App</title>
-
 <style>
 *{box-sizing:border-box;}
-
-body{
- margin:0;
- font-family:system-ui, Arial;
- background:#eaeef3;
-}
-
-.app{
- max-width:420px;
- margin:auto;
- min-height:100vh;
- background:#fff;
-}
-
+body{margin:0;font-family:system-ui, Arial;background:#eaeef3;}
+.app{max-width:420px;margin:auto;min-height:100vh;background:#fff;}
 .page{padding:16px;}
 h3{text-align:center;}
-
-label{
- display:block;
- margin-top:14px;
- font-weight:600;
-}
-
-input{
- width:100%;
- padding:14px;
- margin-top:6px;
- border-radius:12px;
- border:1px solid #ccc;
- font-size:16px;
-}
-
-button{
- width:100%;
- padding:14px;
- margin-top:14px;
- border:none;
- border-radius:14px;
- font-size:16px;
- color:#fff;
- background:#27ae60;
-}
-
+label{display:block;margin-top:14px;font-weight:600;}
+input{width:100%;padding:14px;margin-top:6px;border-radius:12px;border:1px solid #ccc;font-size:16px;}
+button{width:100%;padding:14px;margin-top:14px;border:none;border-radius:14px;font-size:16px;color:#fff;cursor:pointer;}
 .clear-btn{background:#e74c3c;}
 .pay-btn{background:#2980b9;}
 .whatsapp-btn{background:#25D366;}
-
-canvas{
- width:100%;
- height:160px;
- border:2px dashed #aaa;
- border-radius:12px;
- margin-top:8px;
- touch-action:none;
-}
-
-.statement{
- margin-top:12px;
- padding:12px;
- background:#f4f6f8;
- border-radius:12px;
- font-size:14px;
- line-height:1.5;
-}
-
-/* LOADING */
-#loading{
- position:fixed;
- inset:0;
- background:rgba(255,255,255,.95);
- display:none;
- flex-direction:column;
- align-items:center;
- justify-content:center;
- z-index:999;
-}
-
-.spinner{
- width:48px;
- height:48px;
- border:5px solid #6dd5fa;
- border-top:5px solid #27ae60;
- border-radius:50%;
- animation:spin 1s linear infinite;
- margin-bottom:20px;
-}
-
-@keyframes spin{100%{transform:rotate(360deg);}}
-
-#page2{display:none;}
-
-/* POPUP */
-#popup{
- position:fixed;
- inset:0;
- background:rgba(0,0,0,.4);
- display:flex;
- align-items:center;
- justify-content:center;
- opacity:0;
- pointer-events:none;
- transition:.25s;
- z-index:1000;
-}
-
-#popup.active{
- opacity:1;
- pointer-events:auto;
-}
-
-.popup-box{
- background:#fff;
- padding:20px;
- width:85%;
- max-width:320px;
- border-radius:14px;
- text-align:center;
-}
+canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-top:8px;touch-action:none;}
+.statement{margin-top:12px;padding:12px;background:#f4f6f8;border-radius:12px;font-size:14px;line-height:1.5;}
+#popup{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.25s;z-index:1000;}
+#popup.active{opacity:1;pointer-events:auto;}
+.popup-box{background:#fff;padding:20px;width:85%;max-width:320px;border-radius:14px;text-align:center;}
 </style>
 </head>
-
 <body>
 <div class="app">
 
@@ -156,7 +51,7 @@ canvas{
 </div>
 
 <!-- PAGE 2 -->
-<div class="page" id="page2">
+<div class="page" id="page2" style="display:none;">
 <h3>Loan Approved</h3>
 
 <p><b>Customer ID:</b> <span id="customerId"></span></p>
@@ -166,62 +61,52 @@ canvas{
 <div class="statement">
 ඔබ ලබාගන්නා ණය මුදල අනුමත වී ඇත.<br><br>
 රක්ෂණ මුදල ගෙවා පැයක් ඇතුළත මුදල් බැර කෙරේ.<br><br>
-මෙම විස්තර WhatsApp හරහා යවනු ලැබේ.
+රිසිට් පත WhatsApp හරහා එවනු ලැබේ.
 </div>
 
-<button class="pay-btn" onclick="payNow()">ගෙව්ම කරන ආකාරය / Pay Now</button>
+<label>Upload Receipt</label>
+<input type="file" id="receipt" accept="image/*">
 
-<button class="whatsapp-btn" onclick="sendWhatsApp()">
-මේ පිළිබඳ විස්තර WhatsApp Message
-</button>
-</div>
+<button onclick="submitForm()">Submit</button>
+
+<button class="pay-btn" onclick="window.open(PAY_LINK,'_blank')">ගෙව්ම කරන ආකාරය/Pay Now</button>
+
+<button class="whatsapp-btn" id="whatsappBtn">WhatsApp Message</button>
+
+<button onclick="downloadSignature()">Download Signature PNG</button>
 </div>
 
-<!-- LOADING -->
-<div id="loading">
- <div class="spinner"></div>
- <div id="loadingText">Loading...</div>
 </div>
 
 <!-- POPUP -->
 <div id="popup">
- <div class="popup-box">
-  <div id="popupText"></div>
-  <button onclick="popup.classList.remove('active')">OK</button>
- </div>
+<div class="popup-box">
+<div id="popupText"></div>
+<button onclick="popup.classList.remove('active')">OK</button>
+</div>
 </div>
 
 <script>
 const PAY_LINK="https://example.com/pay";
 const WHATSAPP_NO="94742089009";
 
-const loading=document.getElementById("loading");
-const loadingText=document.getElementById("loadingText");
-
 let AUTO_CUSTOMER_ID="";
 
-/* LOADING */
-function showLoading(text){
- loadingText.innerText=text;
- loading.style.display="flex";
-}
-function hideLoading(){
- loading.style.display="none";
-}
-
-/* POPUP */
+// POPUP
+const popup=document.getElementById("popup");
+const popupText=document.getElementById("popupText");
 function showPopup(msg){
  popupText.innerText=msg;
  popup.classList.add("active");
 }
 
-/* CUSTOMER ID */
+// CUSTOMER ID
 function generateCustomerId(){
  const d=new Date();
- return `EZC-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${Math.floor(Math.random()*900+100)}`;
+ return `EZC-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${d.getHours()}${d.getMinutes()}${d.getSeconds()}-${Math.floor(Math.random()*900+100)}`;
 }
 
-/* INSURANCE */
+// INSURANCE
 function calculateInsurance(amount){
  amount=parseInt(amount);
  if(amount<=30000) return 2000;
@@ -229,17 +114,27 @@ function calculateInsurance(amount){
  if(amount<=50000) return 3000;
  if(amount<=100000) return 3500;
  if(amount<=200000) return 4000;
- if(amount<=300000) return 4000;
+ if(amount<=300000) return 4500;
  if(amount<=400000) return 5000;
  return 5500;
 }
 
-/* SIGNATURE */
+// SIGNATURE
 const c=document.getElementById("sign");
 const ctx=c.getContext("2d");
 ctx.lineWidth=3;
 ctx.lineCap="round";
+ctx.lineJoin="round";
+
 let drawing=false;
+
+function resizeCanvas(){
+ const rect=c.getBoundingClientRect();
+ c.width=rect.width;
+ c.height=rect.height;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 c.addEventListener("pointerdown",e=>{
  drawing=true;
@@ -247,7 +142,7 @@ c.addEventListener("pointerdown",e=>{
  ctx.moveTo(e.offsetX,e.offsetY);
 });
 c.addEventListener("pointermove",e=>{
- if(!drawing)return;
+ if(!drawing) return;
  ctx.lineTo(e.offsetX,e.offsetY);
  ctx.stroke();
 });
@@ -258,7 +153,15 @@ function clearSign(){
  ctx.clearRect(0,0,c.width,c.height);
 }
 
-/* PAGE FLOW */
+// CHECK EMPTY SIGNATURE
+function isSignatureEmpty(){
+ const blank = document.createElement("canvas");
+ blank.width=c.width;
+ blank.height=c.height;
+ return c.toDataURL()===blank.toDataURL();
+}
+
+// PAGE FLOW
 function goNext(){
  const name=document.getElementById("name").value.trim();
  const nic=document.getElementById("nic").value.trim();
@@ -269,55 +172,64 @@ function goNext(){
   return;
  }
 
- showLoading("විස්තර යවමින් පවති...");
+ if(isSignatureEmpty()){
+  showPopup("කරුණාකර signature එකක් දමන්න");
+  return;
+ }
 
- setTimeout(()=>{
-  showLoading("ණය මුදල අනුමත වී ඇත – ඉදිරි පියවර Complete කරන්න...");
+ AUTO_CUSTOMER_ID = generateCustomerId();
+ document.getElementById("customerId").innerText=AUTO_CUSTOMER_ID;
+ document.getElementById("showAmount").innerText=amount;
+ document.getElementById("insurance").innerText=calculateInsurance(amount);
 
-  setTimeout(()=>{
-   hideLoading();
-
-   AUTO_CUSTOMER_ID=generateCustomerId();
-   customerId.innerText=AUTO_CUSTOMER_ID;
-   showAmount.innerText=amount;
-   insurance.innerText=calculateInsurance(amount);
-
-   page1.style.display="none";
-   page2.style.display="block";
-  },4000);
- },6000);
+ document.getElementById("page1").style.display="none";
+ document.getElementById("page2").style.display="block";
 }
 
-/* PAY */
-function payNow(){
- showLoading("Redirecting to payment...");
- setTimeout(()=>{
-  hideLoading();
-  window.open(PAY_LINK,"_blank");
- },2000);
+// SUBMIT
+function submitForm(){
+ const receiptInput=document.getElementById("receipt");
+ if(receiptInput.files.length===0){
+  showPopup("කරුණාකර receipt upload කරන්න");
+  return;
+ }
+ showPopup("Receipt uploaded successfully. WhatsApp click කරන්න.");
 }
 
-/* WHATSAPP */
+// WHATSAPP
 function sendWhatsApp(){
- showLoading("Preparing WhatsApp message...");
+ const insuranceVal=document.getElementById("insurance").innerText;
+ const name=document.getElementById("name").value;
+ const amount=document.getElementById("showAmount").innerText;
 
- setTimeout(()=>{
-  hideLoading();
-
-  const msg=
-`📄 Loan Details ✅
-
+ const msg=`විස්තර ඒවා ඇත ✅
+Customer Name: ${name}
 Customer ID: ${AUTO_CUSTOMER_ID}
-Loan Amount: Rs. ${showAmount.innerText}
-Insurance Payment: Rs. ${insurance.innerText}
+Loan Amount: Rs.${amount}
+Insurance Amount: Rs.${insuranceVal}
+Time: ${new Date().toLocaleString()}
+මෙම විස්තර WhatsApp මගින් දැනුම් දෙන්න`;
 
-⏰ ${new Date().toLocaleString()}`;
+ window.open(
+  `https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,
+  "_blank"
+ );
+}
 
-  window.open(
-   `https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,
-   "_blank"
-  );
- },2000);
+document.getElementById("whatsappBtn").onclick=sendWhatsApp;
+
+// DOWNLOAD SIGNATURE PNG
+function downloadSignature(){
+ if(isSignatureEmpty()){
+  showPopup("Signature එකක් draw කරන්න");
+  return;
+ }
+ const signaturePNG = c.toDataURL("image/png");
+ const a = document.createElement("a");
+ a.href = signaturePNG;
+ a.download = `signature-${AUTO_CUSTOMER_ID}.png`;
+ a.click();
+ showPopup("Signature PNG download complete");
 }
 </script>
 </body>
