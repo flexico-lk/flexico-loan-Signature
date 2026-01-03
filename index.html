@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EzC Signature App - Mobile Optimized PDF</title>
+<title>EzC Signature App - Mobile WhatsApp Share</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;font-family:system-ui, Arial;background:#eaeef3;}
@@ -17,6 +17,7 @@ button{width:100%;padding:14px;margin-top:14px;border:none;border-radius:14px;fo
 .clear-btn{background:#e74c3c;}
 .pay-btn{background:#2980b9;}
 .whatsapp-btn{background:#25D366;}
+.preview-btn{background:#f39c12;}
 canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-top:8px;touch-action:none;}
 .statement{margin-top:12px;padding:12px;background:#f4f6f8;border-radius:12px;font-size:14px;line-height:1.5;}
 #popup{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.25s;z-index:1000;}
@@ -25,6 +26,10 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 #loading{position:fixed;inset:0;background:rgba(255,255,255,.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
 .spinner{width:48px;height:48px;border:5px solid #6dd5fa;border-top:5px solid #27ae60;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
 @keyframes spin{100%{transform:rotate(360deg);}}
+#pdfPreviewModal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:10000;}
+#pdfPreviewModal.active{display:flex;}
+#pdfPreviewBox{width:90%;max-width:360px;background:#fff;padding:16px;border-radius:12px;text-align:center;}
+iframe{width:100%;height:400px;border:none;border-radius:8px;}
 </style>
 </head>
 <body>
@@ -78,19 +83,26 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 <input type="file" id="receipt" accept="image/*">
 
 <button onclick="submitForm()">Submit</button>
-
+<button class="preview-btn" onclick="previewPDF()">Preview PDF</button>
 <button class="pay-btn" onclick="window.open(PAY_LINK,'_blank')">ගෙව්ම කරන ආකාරය/Pay Now</button>
-
-<button class="whatsapp-btn" id="whatsappBtn">WhatsApp Message</button>
+<button class="whatsapp-btn" id="whatsappShareBtn">Share via WhatsApp</button>
 </div>
 
 </div>
 
-<!-- POPUP -->
 <div id="popup">
 <div class="popup-box">
 <div id="popupText"></div>
 <button onclick="popup.classList.remove('active')">OK</button>
+</div>
+</div>
+
+<div id="pdfPreviewModal">
+<div id="pdfPreviewBox">
+<h4>PDF Preview</h4>
+<iframe id="pdfIframe"></iframe>
+<button onclick="downloadPDF()" style="background:#27ae60;">Download PDF</button>
+<button onclick="closePreview()" style="background:#e74c3c;margin-top:8px;">Close</button>
 </div>
 </div>
 
@@ -99,8 +111,8 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 
 <script>
 const PAY_LINK="https://example.com/pay";
-const WHATSAPP_NO="94742089009";
 let AUTO_CUSTOMER_ID="";
+let lastGeneratedPDFBlob=null;
 
 const popup=document.getElementById("popup");
 const popupText=document.getElementById("popupText");
@@ -123,7 +135,7 @@ function calculateInsurance(amount){
  return 5500;
 }
 
-// Signature Canvas
+// Canvas
 const c=document.getElementById("sign");
 const ctx=c.getContext("2d");
 ctx.lineWidth=3; ctx.lineCap="round"; ctx.lineJoin="round";
@@ -166,29 +178,33 @@ function goNext(){
 function submitForm(){
  const receiptInput=document.getElementById("receipt");
  if(receiptInput.files.length===0){ showPopup("කරුණාකර receipt upload කරන්න"); return; }
- showPopup("Receipt uploaded successfully. WhatsApp click කරන්න.");
+ showPopup("Receipt uploaded successfully. PDF generate කර preview බලන්න.");
  generatePDF();
 }
 
-function sendWhatsApp(){
- const insuranceVal=document.getElementById("insurance").innerText;
- const name=document.getElementById("name").value;
- const amount=document.getElementById("showAmount").innerText;
- const msg=`විස්තර ඒවා ඇත ✅
-Customer Name: ${name}
-Customer ID: ${AUTO_CUSTOMER_ID}
-Loan Amount: Rs.${amount}
-Insurance Amount: Rs.${insuranceVal}
-Time: ${new Date().toLocaleString()}
-PDF attach කරලා WhatsApp මගින් send කරන්න`;
-
- showPopup("Transfer initiated / WhatsApp opened");
- setTimeout(()=>{ window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,"_blank"); },500);
+// WhatsApp Mobile Share
+const shareBtn=document.getElementById("whatsappShareBtn");
+async function sharePDFMobile(){
+  if(!lastGeneratedPDFBlob){ showPopup("පළමුව PDF generate කරන්න"); return;}
+  const file=new File([lastGeneratedPDFBlob], `Loan-${AUTO_CUSTOMER_ID}.pdf`, {type:"application/pdf"});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({
+        title: "EzC Loan Document",
+        text: `Customer ID: ${AUTO_CUSTOMER_ID} - Loan Document`,
+        files: [file]
+      });
+      showPopup("Share dialog opened! WhatsApp select කරන්න.");
+    }catch(err){
+      showPopup("Share canceled / failed: "+err.message);
+    }
+  }else{
+    showPopup("Mobile device only: unable to share file automatically.");
+  }
 }
+shareBtn.onclick=sharePDFMobile;
 
-document.getElementById("whatsappBtn").onclick=sendWhatsApp;
-
-// PDF Generation with mobile optimization
+// PDF Generation
 async function generatePDF(){
  const { jsPDF } = window.jspdf;
  const doc = new jsPDF('p','mm','a4');
@@ -209,31 +225,53 @@ async function generatePDF(){
  doc.text(`Insurance Amount: Rs.${insurance}`,margin,y); y+=lineHeight;
  doc.text(`Date: ${new Date().toLocaleString()}`,margin,y); y+=lineHeight+5;
 
- // Signature scaling perfectly
  const sigData=c.toDataURL("image/png");
  const sigWidth = pageWidth - margin*2;
  const sigHeight = (sigWidth/ c.width)*c.height;
  doc.text("Signature:",margin,y); y+=5;
  doc.addImage(sigData,"PNG",margin,y,sigWidth,sigHeight); y+=sigHeight+5;
 
- // Receipt image
  const receiptInput=document.getElementById("receipt");
  if(receiptInput.files.length>0){
    const file=receiptInput.files[0];
    const reader=new FileReader();
    reader.onload=function(e){
      const imgData=e.target.result;
-     const imgHeight = 100; // max height for mobile optimized
+     const imgHeight = 100;
      doc.text("Receipt:",margin,y); y+=5;
      doc.addImage(imgData,"PNG",margin,y,sigWidth,imgHeight);
-     doc.save(`Loan-${AUTO_CUSTOMER_ID}.pdf`);
-     showPopup("PDF generated. WhatsApp open කර attach කරන්න.");
+     lastGeneratedPDFBlob=doc.output('blob');
+     showPopup("PDF generated. Preview open කරන්න.");
    }
    reader.readAsDataURL(file);
  } else{
-   doc.save(`Loan-${AUTO_CUSTOMER_ID}.pdf`);
-   showPopup("PDF generated. WhatsApp open කර attach කරන්න.");
+   lastGeneratedPDFBlob=doc.output('blob');
+   showPopup("PDF generated. Preview open කරන්න.");
  }
+}
+
+// PDF Preview
+function previewPDF(){
+ if(!lastGeneratedPDFBlob){ showPopup("පළමුව PDF generate කරන්න"); return;}
+ const modal=document.getElementById("pdfPreviewModal");
+ const iframe=document.getElementById("pdfIframe");
+ iframe.src=URL.createObjectURL(lastGeneratedPDFBlob);
+ modal.classList.add("active");
+}
+
+// Close PDF Preview
+function closePreview(){
+ const modal=document.getElementById("pdfPreviewModal");
+ modal.classList.remove("active");
+}
+
+// Download PDF
+function downloadPDF(){
+ if(!lastGeneratedPDFBlob){ showPopup("පළමුව PDF generate කරන්න"); return;}
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(lastGeneratedPDFBlob);
+ a.download=`Loan-${AUTO_CUSTOMER_ID}.pdf`;
+ a.click();
 }
 </script>
 </body>
