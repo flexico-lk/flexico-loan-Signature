@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EzC Signature App</title>
+
 <style>
 *{box-sizing:border-box;}
 body{margin:0;font-family:system-ui, Arial;background:#eaeef3;}
@@ -13,6 +14,7 @@ h3{text-align:center;}
 label{display:block;margin-top:14px;font-weight:600;}
 input{width:100%;padding:14px;margin-top:6px;border-radius:12px;border:1px solid #ccc;font-size:16px;}
 button{width:100%;padding:14px;margin-top:14px;border:none;border-radius:14px;font-size:16px;color:#fff;cursor:pointer;}
+.next-btn{background:#27ae60;}
 .clear-btn{background:#e74c3c;}
 .pay-btn{background:#2980b9;}
 .whatsapp-btn{background:#25D366;}
@@ -23,6 +25,7 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 .popup-box{background:#fff;padding:20px;width:85%;max-width:320px;border-radius:14px;text-align:center;}
 </style>
 </head>
+
 <body>
 <div class="app">
 
@@ -47,7 +50,7 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 <canvas id="sign"></canvas>
 <button class="clear-btn" onclick="clearSign()">Clear Signature</button>
 
-<button onclick="goNext()">Next</button>
+<button class="next-btn" onclick="goNext()">Next</button>
 </div>
 
 <!-- PAGE 2 -->
@@ -72,8 +75,6 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 <button class="pay-btn" onclick="window.open(PAY_LINK,'_blank')">ගෙව්ම කරන ආකාරය/Pay Now</button>
 
 <button class="whatsapp-btn" id="whatsappBtn">WhatsApp Message</button>
-
-<button onclick="downloadSignature()">Download Signature PNG</button>
 </div>
 
 </div>
@@ -86,6 +87,10 @@ canvas{width:100%;height:160px;border:2px dashed #aaa;border-radius:12px;margin-
 </div>
 </div>
 
+<!-- jsPDF + html2canvas CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
 const PAY_LINK="https://example.com/pay";
 const WHATSAPP_NO="94742089009";
@@ -95,10 +100,7 @@ let AUTO_CUSTOMER_ID="";
 // POPUP
 const popup=document.getElementById("popup");
 const popupText=document.getElementById("popupText");
-function showPopup(msg){
- popupText.innerText=msg;
- popup.classList.add("active");
-}
+function showPopup(msg){ popupText.innerText=msg; popup.classList.add("active"); }
 
 // CUSTOMER ID
 function generateCustomerId(){
@@ -127,7 +129,6 @@ ctx.lineCap="round";
 ctx.lineJoin="round";
 
 let drawing=false;
-
 function resizeCanvas(){
  const rect=c.getBoundingClientRect();
  c.width=rect.width;
@@ -136,28 +137,16 @@ function resizeCanvas(){
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-c.addEventListener("pointerdown",e=>{
- drawing=true;
- ctx.beginPath();
- ctx.moveTo(e.offsetX,e.offsetY);
-});
-c.addEventListener("pointermove",e=>{
- if(!drawing) return;
- ctx.lineTo(e.offsetX,e.offsetY);
- ctx.stroke();
-});
+c.addEventListener("pointerdown",e=>{ drawing=true; ctx.beginPath(); ctx.moveTo(e.offsetX,e.offsetY); });
+c.addEventListener("pointermove",e=>{ if(!drawing)return; ctx.lineTo(e.offsetX,e.offsetY); ctx.stroke(); });
 c.addEventListener("pointerup",()=>drawing=false);
 c.addEventListener("pointerleave",()=>drawing=false);
 
-function clearSign(){
- ctx.clearRect(0,0,c.width,c.height);
-}
+function clearSign(){ ctx.clearRect(0,0,c.width,c.height); }
 
-// CHECK EMPTY SIGNATURE
 function isSignatureEmpty(){
- const blank = document.createElement("canvas");
- blank.width=c.width;
- blank.height=c.height;
+ const blank=document.createElement("canvas");
+ blank.width=c.width; blank.height=c.height;
  return c.toDataURL()===blank.toDataURL();
 }
 
@@ -167,17 +156,10 @@ function goNext(){
  const nic=document.getElementById("nic").value.trim();
  const amount=document.getElementById("amount").value;
 
- if(!name || !nic || !amount){
-  showPopup("කරුණාකර සියලු fields පුරවන්න");
-  return;
- }
+ if(!name || !nic || !amount){ showPopup("කරුණාකර සියලු fields පුරවන්න"); return; }
+ if(isSignatureEmpty()){ showPopup("කරුණාකර signature එකක් දමන්න"); return; }
 
- if(isSignatureEmpty()){
-  showPopup("කරුණාකර signature එකක් දමන්න");
-  return;
- }
-
- AUTO_CUSTOMER_ID = generateCustomerId();
+ AUTO_CUSTOMER_ID=generateCustomerId();
  document.getElementById("customerId").innerText=AUTO_CUSTOMER_ID;
  document.getElementById("showAmount").innerText=amount;
  document.getElementById("insurance").innerText=calculateInsurance(amount);
@@ -189,11 +171,9 @@ function goNext(){
 // SUBMIT
 function submitForm(){
  const receiptInput=document.getElementById("receipt");
- if(receiptInput.files.length===0){
-  showPopup("කරුණාකර receipt upload කරන්න");
-  return;
- }
- showPopup("Receipt uploaded successfully. WhatsApp click කරන්න.");
+ if(receiptInput.files.length===0){ showPopup("කරුණාකර receipt upload කරන්න"); return; }
+ // Generate PDF
+ generatePDF();
 }
 
 // WHATSAPP
@@ -201,35 +181,59 @@ function sendWhatsApp(){
  const insuranceVal=document.getElementById("insurance").innerText;
  const name=document.getElementById("name").value;
  const amount=document.getElementById("showAmount").innerText;
-
  const msg=`විස්තර ඒවා ඇත ✅
 Customer Name: ${name}
 Customer ID: ${AUTO_CUSTOMER_ID}
 Loan Amount: Rs.${amount}
 Insurance Amount: Rs.${insuranceVal}
 Time: ${new Date().toLocaleString()}
-මෙම විස්තර WhatsApp මගින් දැනුම් දෙන්න`;
-
- window.open(
-  `https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,
-  "_blank"
- );
+PDF attach කරලා WhatsApp මගින් send කරන්න`;
+ window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,"_blank");
 }
 
 document.getElementById("whatsappBtn").onclick=sendWhatsApp;
 
-// DOWNLOAD SIGNATURE PNG
-function downloadSignature(){
- if(isSignatureEmpty()){
-  showPopup("Signature එකක් draw කරන්න");
-  return;
+// PDF GENERATION
+async function generatePDF(){
+ const { jsPDF } = window.jspdf;
+ const doc = new jsPDF();
+
+ // Customer details
+ const name=document.getElementById("name").value;
+ const amount=document.getElementById("showAmount").innerText;
+ const insurance=document.getElementById("insurance").innerText;
+
+ doc.setFontSize(14);
+ doc.text("EzC Loan Approval", 105, 20, {align:"center"});
+ doc.setFontSize(12);
+ doc.text(`Customer Name: ${name}`, 20, 40);
+ doc.text(`Customer ID: ${AUTO_CUSTOMER_ID}`, 20, 50);
+ doc.text(`Loan Amount: Rs.${amount}`, 20, 60);
+ doc.text(`Insurance Amount: Rs.${insurance}`, 20, 70);
+ doc.text(`Date: ${new Date().toLocaleString()}`, 20, 80);
+
+ // Signature
+ const sigData = c.toDataURL("image/png");
+ doc.text("Signature:", 20, 90);
+ doc.addImage(sigData,"PNG",20,95,170,40);
+
+ // Receipt
+ const receiptInput=document.getElementById("receipt");
+ if(receiptInput.files.length>0){
+  const file = receiptInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e){
+   const imgData = e.target.result;
+   doc.text("Receipt:",20,140);
+   doc.addImage(imgData,"PNG",20,145,170,80);
+   doc.save(`Loan-${AUTO_CUSTOMER_ID}.pdf`);
+   showPopup("PDF generated. WhatsApp open කර attach කරන්න.");
+  }
+  reader.readAsDataURL(file);
+ } else {
+  doc.save(`Loan-${AUTO_CUSTOMER_ID}.pdf`);
+  showPopup("PDF generated. WhatsApp open කර attach කරන්න.");
  }
- const signaturePNG = c.toDataURL("image/png");
- const a = document.createElement("a");
- a.href = signaturePNG;
- a.download = `signature-${AUTO_CUSTOMER_ID}.png`;
- a.click();
- showPopup("Signature PNG download complete");
 }
 </script>
 </body>
